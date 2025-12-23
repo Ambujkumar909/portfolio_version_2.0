@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useScroll, useSpring, useTransform, useInView } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { 
   Github, 
   Linkedin, 
@@ -12,657 +12,408 @@ import {
   Terminal,
   Zap,
   Layers,
-  Brain,
-  Cpu,
-  Database,
-  Bot,
-  ChevronDown,
-  Code,
-  Box,
-  Globe,
+  Sun,
+  Moon,
+  ChevronRight,
+  ChevronLeft,
+  Monitor,
+  Code2,
+  FastForward,
   Activity,
-  Search,
-  Settings,
-  LineChart
+  ShieldAlert,
+  Cpu
 } from 'lucide-react';
 import { SKILLS, PROJECTS, AUTOMATION_TOOLS } from './constants';
-import { Project } from './types';
 
-// --- Global UI Components ---
-
-const Magnetic = ({ children, strength = 0.3 }: { children: React.ReactNode, strength?: number }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!ref.current) return;
-    const { clientX, clientY } = e;
-    const { left, top, width, height } = ref.current.getBoundingClientRect();
-    const centerX = left + width / 2;
-    const centerY = top + height / 2;
-    setPosition({ x: (clientX - centerX) * strength, y: (clientY - centerY) * strength });
-  };
-
-  const handleMouseLeave = () => setPosition({ x: 0, y: 0 });
-
-  return (
-    <motion.div
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      animate={{ x: position.x, y: position.y }}
-      transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-const CustomCursor = () => {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-
-  useEffect(() => {
-    const handleMove = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
-    const handleOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest('button, a, .interactive, .project-card')) setIsHovering(true);
-      else setIsHovering(false);
-    };
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseover', handleOver);
-    return () => {
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('mouseover', handleOver);
-    };
-  }, []);
-
-  return (
-    <motion.div 
-      className="fixed top-0 left-0 w-5 h-5 rounded-full border border-[#E50914] pointer-events-none z-[100] mix-blend-difference hidden md:block"
-      animate={{ 
-        x: mousePos.x - 10, 
-        y: mousePos.y - 10,
-        scale: isHovering ? 2.5 : 1,
-        backgroundColor: isHovering ? 'rgba(229, 9, 20, 0.5)' : 'transparent',
-        borderWidth: isHovering ? '0px' : '1px'
-      }}
-      transition={{ type: 'spring', damping: 35, stiffness: 350, mass: 0.5 }}
-    />
-  );
-};
-
-const SectionHeader = ({ title, subtitle, tag }: { title: string, subtitle: string, tag: string }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
-  return (
-    <div ref={ref} className="mb-20 md:mb-32">
-      <motion.div 
-        initial={{ opacity: 0, x: -20 }}
-        animate={isInView ? { opacity: 1, x: 0 } : {}}
-        className="flex items-center gap-4 mb-6"
-      >
-        <span className="text-[10px] font-black text-[#E50914] font-mono tracking-[0.4em] uppercase">{tag}</span>
-        <div className="h-px flex-1 bg-white/5"></div>
-      </motion.div>
-      <motion.h3 
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        className="text-4xl md:text-7xl font-black font-display uppercase italic tracking-tighter text-white mb-6"
-      >
-        {title}
-      </motion.h3>
-      <motion.p 
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ delay: 0.2 }}
-        className="text-gray-500 text-sm md:text-xl font-light max-w-2xl italic leading-relaxed"
-      >
-        {subtitle}
-      </motion.p>
+// --- Precise Logo Component (Refined Spacing, No Italics) ---
+const BrandIdentity: React.FC<{ isDark: boolean }> = ({ isDark }) => (
+  <div className="flex items-center gap-5">
+    <div className="w-10 h-10 md:w-11 md:h-11 bg-brand flex items-center justify-center shrink-0 shadow-lg shadow-brand/10">
+      <span className="text-white font-extrabold text-xl md:text-2xl font-display">A</span>
     </div>
-  );
-};
+    <div className="flex flex-col justify-center text-left">
+      <span className="font-display font-extrabold text-xl md:text-2xl tracking-tight uppercase leading-none mb-1.5">
+        Ambuj Kumar
+      </span>
+      <span className={`text-[8px] md:text-[9px] font-bold uppercase tracking-[0.25em] leading-none ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+        Systems & Automation Engineer
+      </span>
+    </div>
+  </div>
+);
 
-const TechCard = ({ cat, idx, skills }: { cat: string, idx: number, skills: any[] }) => {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [rotate, setRotate] = useState({ x: 0, y: 0 });
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setMousePos({ x, y });
-
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = (y - centerY) / 25;
-    const rotateY = (centerX - x) / 25;
-    setRotate({ x: rotateX, y: rotateY });
-  };
-
-  const handleMouseLeave = () => {
-    setRotate({ x: 0, y: 0 });
-  };
-
-  const getIcon = (category: string) => {
-    if (category.includes('GenAI')) return <Bot size={24} />;
-    if (category.includes('Backend')) return <Cpu size={24} />;
-    if (category.includes('Automation')) return <Terminal size={24} />;
-    if (category.includes('Intelligence')) return <Brain size={24} />;
-    return <Database size={24} />;
-  };
-
-  return (
-    <motion.div 
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      style={{
-        transformStyle: 'preserve-3d',
-        perspective: '1000px',
-        rotateX: rotate.x,
-        rotateY: rotate.y
-      }}
-      transition={{ delay: idx * 0.1, duration: 0.8, ease: "circOut" }}
-      className={`relative p-8 md:p-12 bg-zinc-950 border border-white/5 overflow-hidden group hover:border-[#E50914]/60 transition-colors duration-500 shadow-2xl
-        ${idx === 0 || idx === 3 ? 'md:col-span-7' : 'md:col-span-5'}
-      `}
-    >
-      <div 
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-        style={{
-          background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, rgba(229, 9, 20, 0.12), transparent 40%)`
-        }}
-      />
-      <div className="absolute inset-0 opacity-[0.02] pointer-events-none group-hover:opacity-[0.05] transition-opacity duration-700" 
-           style={{ backgroundImage: 'radial-gradient(#fff 0.5px, transparent 0.5px)', backgroundSize: '32px 32px' }} />
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#E50914]/40 to-transparent animate-[scan_6s_linear_infinite] pointer-events-none" />
-
-      <div className="relative z-10 h-full flex flex-col" style={{ transform: 'translateZ(50px)' }}>
-        <div className="flex justify-between items-start mb-12">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-mono text-[#E50914] font-bold tracking-widest uppercase bg-[#E50914]/5 px-2 py-0.5 rounded-sm">MODULE_0{idx + 1}</span>
-              <div className="w-1.5 h-1.5 rounded-full bg-[#E50914] animate-pulse shadow-[0_0_8px_rgba(229,9,20,0.8)]" />
-            </div>
-            <h4 className="font-display font-black text-3xl md:text-4xl lg:text-5xl uppercase tracking-tighter text-white italic group-hover:text-[#E50914] transition-colors leading-none">
-              {cat}
-            </h4>
-          </div>
-          <div className="w-14 h-14 border border-white/10 flex items-center justify-center text-gray-500 group-hover:text-[#E50914] group-hover:border-[#E50914]/40 group-hover:scale-110 transition-all bg-black shadow-inner">
-            {getIcon(cat)}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2.5 mt-auto">
-          {skills.map(s => (
-            <div 
-              key={s.name} 
-              className="px-4 py-2.5 bg-black border border-white/5 text-[10px] uppercase font-black text-gray-400 group-hover:text-white hover:border-[#E50914]/70 hover:shadow-[0_0_20px_rgba(229,9,20,0.15)] transition-all cursor-default relative overflow-hidden"
-            >
-              <div className="relative z-10">{s.name}</div>
-              <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-[#E50914] group-hover:w-full transition-all duration-700 delay-100 opacity-50"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-const Navbar = () => {
+const Navbar: React.FC<{ isDark: boolean; setIsDark: (v: boolean) => void }> = ({ isDark, setIsDark }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { scrollY } = useScroll();
-  const navBackground = useTransform(scrollY, [0, 80], ['rgba(0,0,0,0)', 'rgba(3,3,3,0.98)']);
-  const navBorder = useTransform(scrollY, [0, 80], ['rgba(255,255,255,0)', 'rgba(255,255,255,0.08)']);
+  const bgOpacity = useTransform(scrollY, [0, 50], [0, 1]);
 
   const links = [
-    { name: 'Technical Arsenal', href: '#arsenal', icon: <Cpu size={14}/>, label: '01' },
-    { name: 'Featured Work', href: '#work', icon: <Box size={14}/>, label: '02' },
-    { name: 'System Automation', href: '#automation', icon: <Terminal size={14}/>, label: '03' },
-    { name: 'Contact Protocol', href: '#connect', icon: <Globe size={14}/>, label: '04' },
+    { name: 'Arsenal', href: '#arsenal' },
+    { name: 'Exhibition', href: '#work' },
+    { name: 'Infrastructure', href: '#systems' },
+    { name: 'Connect', href: '#connect' },
   ];
 
-  useEffect(() => {
-    if (isOpen) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = 'unset';
-    return () => { document.body.style.overflow = 'unset'; };
-  }, [isOpen]);
-
   return (
-    <motion.nav 
-      style={{ backgroundColor: navBackground, borderBottom: `1px solid ${navBorder.get()}`, backdropFilter: 'blur(12px)' }}
-      className="fixed top-0 w-full z-[100] py-4 md:py-6 px-6 md:px-16 flex justify-between items-center transition-all duration-300"
-    >
-      <div className="flex items-center gap-4 relative z-[101]">
-        <div className="w-5 h-5 flex items-center justify-center">
-  <svg
-    viewBox="0 0 100 100"
-    className="w-full h-full transition-transform duration-700 hover:rotate-180"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    
-    <rect x="0" y="0" width="100" height="100" fill="#E50914" />
-
-    
-    <path
-      d="M50 10 L90 90 H75 L65 70 H35 L25 90 H10 Z M42 55 H58 L50 30 Z"
-      fill="#000000"
-    />
-  </svg>
-</div>
-
-        <div className="flex flex-col">
-          <span className="font-display font-black text-sm md:text-base tracking-tighter uppercase italic text-white leading-none">Ambuj Kumar</span>
-          <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest leading-none mt-1">Systems & Automation Engineer</span>
-        </div>
-      </div>
+    <nav className="fixed top-0 w-full z-[100] h-20 md:h-28 flex items-center px-6 md:px-12">
+      <motion.div style={{ opacity: bgOpacity }} className={`absolute inset-0 backdrop-blur-xl border-b ${isDark ? 'bg-black/80 border-slate-900' : 'bg-white/70 border-slate-200'}`} />
       
-      <div className="hidden md:flex items-center gap-10">
-        <div className="flex gap-8 text-[9px] font-bold uppercase tracking-[0.4em] text-gray-500">
-          {links.map(item => (
-            <a key={item.name} href={item.href} className="hover:text-[#E50914] transition-colors relative group flex items-center gap-2">
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[#E50914]">{item.icon}</span>
-              {item.name}
-              <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#E50914] transition-all group-hover:w-full"></span>
-            </a>
-          ))}
-        </div>
-        <div className="h-6 w-[1px] bg-white/10 mx-2"></div>
-        <Magnetic strength={0.2}>
-          <a href="mailto:ambujkr8@gmail.com" className="bg-white/5 hover:bg-[#E50914]/10 border border-white/10 hover:border-[#E50914]/40 px-4 py-2 text-[9px] font-black uppercase tracking-widest text-white transition-all rounded-sm block">
-            Hire System
-          </a>
-        </Magnetic>
-      </div>
+      <div className="relative w-full max-w-[1400px] mx-auto flex justify-between items-center">
+        <BrandIdentity isDark={isDark} />
 
-      <button className="md:hidden text-white relative z-[101] p-2 hover:text-[#E50914] transition-colors" onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? <X size={28} strokeWidth={2.5} /> : <Menu size={28} strokeWidth={2.5} />}
-      </button>
+        <div className="hidden lg:flex items-center gap-12">
+          <div className="flex gap-10">
+            {links.map(link => (
+              <a key={link.name} href={link.href} className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 hover:text-brand transition-all">
+                {link.name}
+              </a>
+            ))}
+          </div>
+          <button onClick={() => setIsDark(!isDark)} className={`p-2.5 rounded-full border transition-all ${isDark ? 'border-slate-800 bg-slate-900 text-brand' : 'border-slate-200 bg-white text-brand shadow-sm'}`}>
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+        </div>
+
+        <div className="lg:hidden flex items-center gap-4">
+          <button onClick={() => setIsDark(!isDark)} className="p-2 text-brand">
+            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+          <button onClick={() => setIsOpen(true)} className={`p-2 rounded-xl border ${isDark ? 'border-slate-800' : 'border-slate-200 bg-white'}`}>
+            <Menu size={20} className="text-brand" />
+          </button>
+        </div>
+      </div>
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 h-screen w-screen bg-[#030303] z-[100] flex flex-col items-center justify-center p-8 overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(229,9,20,0.08)_0%,transparent_70%)] pointer-events-none" />
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-
-            <div className="relative z-10 flex flex-col items-center gap-6 md:gap-10 w-full max-w-xl">
-              {links.map((item, i) => (
-                <motion.a 
-                  key={item.name} 
-                  href={item.href} 
-                  onClick={() => setIsOpen(false)}
-                  initial={{ opacity: 0, y: 40, skewY: 5 }}
-                  animate={{ opacity: 1, y: 0, skewY: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  className="group relative flex flex-col items-center text-center py-2"
-                >
-                  <span className="text-[#E50914] font-mono text-[10px] md:text-xs font-black tracking-[0.5em] mb-2 md:mb-4 group-hover:scale-110 transition-transform">
-                    {item.label}
-                  </span>
-                  <span className="text-4xl sm:text-5xl md:text-7xl font-black font-display uppercase italic tracking-tighter text-white group-hover:text-[#E50914] transition-all duration-300">
-                    {item.name}
-                  </span>
-                  <div className="absolute bottom-0 h-px w-0 bg-[#E50914] group-hover:w-full transition-all duration-500 opacity-50" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className={`fixed inset-0 z-[110] p-10 flex flex-col ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
+            <div className="flex justify-between items-center mb-16">
+              <BrandIdentity isDark={isDark} />
+              <button onClick={() => setIsOpen(false)} className="p-3 bg-brand text-white rounded-full shadow-lg"><X size={24} /></button>
+            </div>
+            <div className="flex flex-col gap-8 flex-1">
+              {links.map((link, i) => (
+                <motion.a initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
+                  key={link.name} href={link.href} onClick={() => setIsOpen(false)}
+                  className="text-4xl font-display font-extrabold tracking-tighter hover:text-brand transition-colors uppercase">
+                  {link.name}
                 </motion.a>
               ))}
             </div>
-
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="absolute bottom-12 flex flex-col items-center gap-6"
-            >
-              <div className="flex gap-10">
-                <a href="https://github.com/Ambujkumar909/" target="_blank" className="text-white hover:text-[#E50914] transition-colors">
-                  <Github size={20} />
-                </a>
-                <a href="https://www.linkedin.com/in/ambuj-kumar-80144b200/" target="_blank" className="text-white hover:text-[#E50914] transition-colors">
-                  <Linkedin size={20} />
-                </a>
-                <a href="mailto:ambujkr8@gmail.com" className="text-white hover:text-[#E50914] transition-colors">
-                  <Mail size={20} />
-                </a>
-              </div>
-            </motion.div>
+            <div className="pt-8 border-t border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+               Engineering Excellence — 2025
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+    </nav>
   );
 };
 
-const Hero = () => {
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 400], [0, 100]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+const ProjectCarousel: React.FC<{ isDark: boolean }> = ({ isDark }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isFast, setIsFast] = useState(false);
+  const displayProjects = [...PROJECTS, ...PROJECTS, ...PROJECTS];
 
-  const titleLines = ["AMBUJ KUMAR |", "ENGINEERING", "AUTONOMY."];
+  const handleManualScroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = direction === 'left' ? -600 : 600;
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden bg-black text-center pt-20">
-      <div className="absolute inset-0 z-0 opacity-15 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[radial-gradient(circle_at_center,rgba(229,9,20,0.1)_0%,transparent_60%)]"></div>
+    <div className="relative group">
+      {/* Manual Navigation Buttons */}
+      <div className="absolute top-1/2 -translate-y-1/2 left-6 md:left-16 z-30 opacity-0 group-hover:opacity-100 transition-all pointer-events-auto hidden md:block">
+        <button onClick={() => handleManualScroll('left')} className="p-6 bg-white dark:bg-zinc-900 text-brand rounded-full shadow-2xl hover:bg-brand hover:text-white transition-all transform hover:scale-110 active:scale-95">
+          <ChevronLeft size={28} />
+        </button>
+      </div>
+      <div className="absolute top-1/2 -translate-y-1/2 right-6 md:right-16 z-30 opacity-0 group-hover:opacity-100 transition-all pointer-events-auto hidden md:block">
+        <button onClick={() => handleManualScroll('right')} className="p-6 bg-white dark:bg-zinc-900 text-brand rounded-full shadow-2xl hover:bg-brand hover:text-white transition-all transform hover:scale-110 active:scale-95">
+          <ChevronRight size={28} />
+        </button>
       </div>
 
-      <motion.div style={{ y, opacity }} className="relative z-10 w-full max-w-5xl px-4">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-3 mb-8 px-4 py-1 border border-[#E50914]/20 rounded-sm bg-[#E50914]/5"
+      {/* Fast Forward Toggle */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30">
+        <button 
+          onClick={() => setIsFast(!isFast)}
+          className={`flex items-center gap-3 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg border ${
+            isFast ? 'bg-brand text-white border-brand' : 'bg-white/80 dark:bg-black/80 text-slate-500 border-slate-200 dark:border-slate-800'
+          }`}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-[#E50914] animate-pulse shadow-[0_0_10px_rgba(229,9,20,0.5)]"></span>
-          <span className="text-[8px] md:text-[9px] font-black text-[#E50914] uppercase tracking-[0.6em]">Core Intelligence Active</span>
-        </motion.div>
+          <FastForward size={14} className={isFast ? 'animate-pulse' : ''} /> {isFast ? 'Slow Down' : 'Fast Forward'}
+        </button>
+      </div>
 
-        <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[6rem] font-black font-display tracking-tighter leading-[0.95] mb-8 md:mb-12 uppercase italic text-white flex flex-col items-center">
-          {titleLines.map((line, i) => (
-            <motion.span 
-              key={line}
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 + (i * 0.1), duration: 0.8, ease: "circOut" }}
-              className={line.includes("AUTONOMY") ? "text-[#E50914]" : ""}
-            >
-              {line}
-            </motion.span>
-          ))}
-        </h1>
-
-        <motion.div 
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
-          className="max-w-3xl mx-auto mb-12 md:mb-16"
-        >
-          <p className="text-gray-400 text-sm md:text-xl lg:text-2xl font-light leading-relaxed">
-            Specializing in bridging the gap between <span className="text-white font-bold">complex backend architecture</span> and <span className="text-white font-bold italic text-[#E50914]">intelligent agentic workflows</span>.
-          </p>
-        </motion.div>
-
-        <div className="flex flex-col sm:flex-row gap-4 md:gap-8 justify-center items-center">
-          <Magnetic strength={0.3}>
-            <a href="#work" className="w-full sm:w-auto px-10 py-4 bg-[#E50914] text-white font-black uppercase tracking-[0.3em] text-[10px] hover:bg-[#B20710] transition-all flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(229,9,20,0.2)]">
-              Active Projects <ArrowRight size={14} />
-            </a>
-          </Magnetic>
-          <Magnetic strength={0.3}>
-            <a href="#arsenal" className="w-full sm:w-auto px-10 py-4 border border-white/10 text-white font-black uppercase tracking-[0.3em] text-[10px] hover:bg-white/5 transition-all flex items-center justify-center">
-              Inspect Tech
-            </a>
-          </Magnetic>
-        </div>
-      </motion.div>
-
-      <motion.div 
-        animate={{ y: [0, 8, 0] }}
-        transition={{ repeat: Infinity, duration: 3 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 text-gray-800 hidden md:flex flex-col items-center gap-2"
+      <div 
+        ref={scrollRef} 
+        className={`relative w-full overflow-x-auto no-scrollbar py-10 md:py-20`}
       >
-        <span className="text-[7px] uppercase font-bold tracking-[1em]">Deploy Scroll</span>
-        <ChevronDown size={12} />
-      </motion.div>
-    </section>
-  );
-};
+        <div className={`flex scroll-content gap-6 md:gap-12 w-max px-6 md:px-12 ${isFast ? 'animate-fast-scroll' : 'animate-infinite-scroll'} pause-scroll`}>
+          {displayProjects.map((project, idx) => (
+            <div key={`${project.id}-${idx}`} 
+              className={`flex-none w-[90vw] md:w-[750px] group/card transition-all duration-700 ${
+                isDark ? 'bg-[#0A0A0A] border border-slate-900' : 'bg-white border border-slate-100 rounded-[3rem] shadow-xl shadow-slate-100/50'
+              } overflow-hidden`}>
+              <div className="aspect-[21/9] overflow-hidden relative">
+                <img src={project.image} alt={project.title} className="w-full h-full object-cover grayscale group-hover/card:grayscale-0 transition-all duration-1000 group-hover/card:scale-105" />
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-md">
+                   <a href={project.link} target="_blank" className="p-6 bg-white text-black rounded-full hover:bg-brand hover:text-white transition-all shadow-2xl scale-0 group-hover/card:scale-100 duration-500">
+                      <ExternalLink size={28} />
+                   </a>
+                </div>
+              </div>
 
-const SkillBento = () => {
-  const categories = Array.from(new Set(SKILLS.map(s => s.category)));
+              <div className="p-10 md:p-14 text-left">
+                {/* Header Meta & Impact */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+                   <div className="flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center">
+                        <Cpu size={16} className="text-brand" />
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand">System Diagnostic</span>
+                      <div className={`hidden md:block w-8 h-px ${isDark ? 'bg-slate-900' : 'bg-slate-100'}`} />
+                   </div>
+                   
+                   {project.impact && (
+                     <motion.div 
+                        whileHover={{ scale: 1.05 }}
+                        className="inline-flex items-center gap-3 bg-brand text-white px-6 py-2.5 rounded-full shadow-lg shadow-brand/20 border border-brand/50"
+                     >
+                        <Activity size={14} className="animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">{project.impact}</span>
+                     </motion.div>
+                   )}
+                </div>
 
-  return (
-    <section id="arsenal" className="py-24 md:py-40 px-6 md:px-16 bg-black relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[40vw] h-[40vw] bg-[#E50914]/5 blur-[120px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
-      
-      <div className="max-w-7xl mx-auto relative z-10">
-        <SectionHeader 
-          tag="Intelligence Matrix" 
-          title="The Technical Core." 
-          subtitle="A high-density diagnostic of my architectural capabilities focused on generative systems and automated pipelines." 
-        />
+                <h3 className="text-3xl md:text-5xl font-display font-extrabold mb-12 tracking-tighter uppercase leading-[0.9]">{project.title}</h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-4 lg:gap-6">
-          {categories.map((cat, idx) => (
-            <TechCard key={cat} cat={cat} idx={idx} skills={SKILLS.filter(s => s.category === cat)} />
+                {/* Challenges & Solution Section */}
+                <div className="grid md:grid-cols-2 gap-10 md:gap-16 mb-14">
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-4">
+                      <ShieldAlert size={14} className="text-slate-400" />
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Problem Vector</h4>
+                    </div>
+                    <p className={`text-sm md:text-base leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                      {project.context}
+                    </p>
+                    <div className="absolute -left-4 top-0 bottom-0 w-[2px] bg-slate-200 dark:bg-slate-800 rounded-full" />
+                  </div>
+
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Zap size={14} className="text-brand" />
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand">Engineered Solution</h4>
+                    </div>
+                    <p className={`text-sm md:text-base leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {project.solution}
+                    </p>
+                    <div className="absolute -left-4 top-0 bottom-0 w-[2px] bg-brand rounded-full" />
+                  </div>
+                </div>
+
+                {/* Tech Stack */}
+                <div className="flex flex-wrap gap-2 pt-6 border-t border-slate-100 dark:border-slate-900">
+                  {project.tech.map(t => (
+                    <span key={t} className={`px-5 py-2 text-[9px] font-bold uppercase tracking-widest ${isDark ? 'bg-slate-900 border border-slate-800 text-slate-500' : 'bg-slate-50 border border-slate-100 text-slate-400 rounded-full'}`}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
-    </section>
-  );
-};
-
-const ProjectFeature: React.FC<{ project: Project; index: number }> = ({ project, index }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-  return (
-    <div className="min-h-screen flex items-center py-20 md:py-32 border-b border-white/5 relative overflow-hidden">
-      <div ref={ref} className={`max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-10 md:gap-20 items-center px-6 md:px-16 ${index % 2 !== 0 ? 'lg:flex-row-reverse' : ''}`}>
-        
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={isInView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 1, ease: "circOut" }}
-          className={`relative aspect-video bg-zinc-900 group overflow-hidden border border-white/10 ${index % 2 !== 0 ? 'lg:order-last' : ''}`}
-        >
-          <img 
-            src={project.image} 
-            alt={project.title} 
-            className="w-full h-full object-cover grayscale brightness-50 group-hover:grayscale-0 group-hover:brightness-90 transition-all duration-1000 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 group-hover:opacity-40 transition-opacity"></div>
-          <div className="absolute top-4 left-4 p-3 bg-black/80 backdrop-blur-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-            <span className="text-[8px] font-black uppercase text-[#E50914] tracking-[0.4em]">DEPLOYMENT_ACTIVE</span>
-          </div>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, x: index % 2 === 0 ? 30 : -30 }}
-          animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="space-y-8"
-        >
-          <div>
-            <div className="flex items-center gap-4 mb-4">
-               <span className="text-[9px] font-black text-[#E50914] font-mono tracking-widest uppercase">Protocol: AK_CS_{index + 1}</span>
-            </div>
-            <h3 className="text-4xl md:text-6xl font-black font-display uppercase italic tracking-tighter text-white leading-tight">
-              {project.title}
-            </h3>
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.5em] mt-4 mb-8">{project.subtitle}</p>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-8 border-l border-[#E50914]/30 pl-8">
-            <div className="space-y-3">
-               <h4 className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em]">Context</h4>
-               <p className="text-gray-400 font-light text-sm md:text-base leading-relaxed">{project.context}</p>
-            </div>
-            <div className="space-y-3">
-               <h4 className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em]">Architecture</h4>
-               <p className="text-gray-300 font-medium text-sm md:text-base leading-relaxed">{project.solution}</p>
-            </div>
-          </div>
-
-          <div className="pt-8 flex flex-wrap items-center justify-between gap-8">
-             <div className="flex flex-wrap gap-2">
-                {project.tech.map(t => (
-                   <span key={t} className="px-3 py-1 bg-white/5 border border-white/5 text-[8px] font-black text-gray-500 uppercase">{t}</span>
-                ))}
-             </div>
-             {project.link && (
-                <Magnetic strength={0.2}>
-                  <a href={project.link} target="_blank" className="flex items-center gap-3 text-white text-[10px] font-black uppercase tracking-[0.3em] hover:text-[#E50914] transition-colors border-b border-transparent hover:border-[#E50914] pb-1">
-                    VIEW LIVE <ExternalLink size={12} />
-                  </a>
-                </Magnetic>
-             )}
-          </div>
-        </motion.div>
-      </div>
     </div>
   );
 };
-
-const Automation = () => (
-  <section id="automation" className="py-24 md:py-40 px-6 md:px-16 bg-[#050505]">
-    <div className="max-w-7xl mx-auto">
-      <SectionHeader 
-        tag="Functional Systems" 
-        title="Proof of Utility." 
-        subtitle="A high-throughput list of micro-services and business automations engineered to solve scalability bottlenecks."
-      />
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {AUTOMATION_TOOLS.map((tool, idx) => (
-          <motion.a 
-            key={tool.title} 
-            href={tool.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            whileHover={{ y: -5, borderColor: 'rgba(229,9,20,0.3)' }}
-            className="p-10 md:p-12 bg-black border border-white/5 group transition-all block relative"
-          >
-            <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-               <ExternalLink size={14} className="text-[#E50914]" />
-            </div>
-            
-            <div className="text-[#E50914] mb-8 w-10 h-10 flex items-center justify-center border border-white/5 group-hover:border-[#E50914] transition-all bg-zinc-950">
-               {idx === 0 ? <Terminal size={20} /> : idx === 1 ? <Zap size={20} /> : <Layers size={20} />}
-            </div>
-            
-            <h4 className="text-xl font-black font-display uppercase italic tracking-tighter mb-4 text-white group-hover:text-[#E50914] transition-colors">{tool.title}</h4>
-            
-            <p className="text-gray-500 leading-relaxed font-medium text-xs md:text-sm group-hover:text-gray-400 mb-6">
-              {tool.description}
-            </p>
-
-            <div className="text-[9px] font-black uppercase tracking-[0.2em] text-[#E50914]/40 group-hover:text-[#E50914] transition-colors flex items-center gap-2">
-               <span>INSPECT_PROTOCOL</span> <ArrowRight size={10} />
-            </div>
-          </motion.a>
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
-const Contact = () => (
-  <section id="connect" className="py-32 md:py-48 px-6 md:px-16 bg-black border-t border-white/5 relative overflow-hidden">
-    <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#E50914]/30 to-transparent"></div>
-    
-    <div className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10">
-      <SectionHeader 
-        tag="Contact Protocol" 
-        title="Start the Conversation." 
-        subtitle="Looking for a developer who can automate your bottleneck? Let's initiate the communication sequence."
-      />
-      
-      <div className="flex flex-wrap justify-center gap-6 md:gap-12 mb-24">
-        {[
-          { name: 'Email', icon: <Mail size={14}/>, href: 'mailto:ambujkr8@gmail.com' },
-          { name: 'LinkedIn', icon: <Linkedin size={14}/>, href: 'https://www.linkedin.com/in/ambuj-kumar-80144b200/' },
-          { name: 'GitHub', icon: <Github size={14}/>, href: 'https://github.com/Ambujkumar909/' },
-        ].map(social => (
-          <Magnetic key={social.name} strength={0.4}>
-            <a href={social.href} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-3 text-white text-[10px] font-black uppercase tracking-[0.4em] border border-white/10 px-6 py-3 hover:bg-white/5 hover:border-[#E50914]/50 transition-all">
-              {social.icon} {social.name}
-            </a>
-          </Magnetic>
-        ))}
-      </div>
-
-      <div className="w-full pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 opacity-40">
-        <p className="text-[8px] font-black text-gray-500 uppercase tracking-[0.4em]">© {new Date().getFullYear()} Ambuj Kumar — System_Deployed</p>
-        <div className="flex gap-8 text-[8px] font-black text-gray-500 uppercase tracking-[0.4em]">
-           <span className="flex items-center gap-2"><Activity size={10} className="text-green-500"/> Core: Online</span>
-        </div>
-      </div>
-    </div>
-  </section>
-);
 
 const App = () => {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+  const [isDark, setIsDark] = useState<boolean>(false); // Default to Light Mode (Cream)
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (isDark) root.classList.add('dark');
+    else root.classList.remove('dark');
+  }, [isDark]);
 
   return (
-    <div className="selection:bg-[#E50914] selection:text-white bg-black min-h-screen text-white">
-      <CustomCursor />
-      <Navbar />
-      
-      <motion.div 
-        className="fixed top-0 left-0 right-0 h-[1.5px] bg-[#E50914] z-[100] origin-left shadow-[0_0_10px_rgba(229,9,20,0.5)]"
-        style={{ scaleX }}
-      />
+    <div className="min-h-screen transition-colors duration-700 selection:bg-brand selection:text-white">
+      <Navbar isDark={isDark} setIsDark={setIsDark} />
 
-      <main className="relative">
-        <Hero />
-        <SkillBento />
-        
-        <section id="work" className="bg-black">
-          <div className="max-w-7xl mx-auto px-6 md:px-16 pt-32">
-            <SectionHeader 
-              tag="Featured Work" 
-              title="Field Evidence." 
-              subtitle="Deep dives into spatial optimization, market intelligence, and reasoning agent architectures built for real-world impact."
-            />
+      {/* Hero Section */}
+      <section className="relative min-h-[95vh] flex flex-col items-center justify-center px-6 pt-24 pb-12 overflow-hidden">
+        <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.08)_0%,transparent_75%)]" />
+        </div>
+
+        <div className="max-w-[1400px] mx-auto text-center md:text-left w-full relative z-10">
+           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+              <div className="flex items-center gap-5 mb-12 justify-center md:justify-start">
+                 <div className="w-12 h-px bg-brand" />
+                 <span className="text-brand text-[11px] font-black uppercase tracking-[0.6em]">Systems Engineering</span>
+              </div>
+              
+              <h1 className="text-5xl md:text-[10rem] font-display font-extrabold tracking-tighter leading-[0.8] mb-20 uppercase">
+                Architecting <br /> <span className="text-brand">Autonomy.</span>
+              </h1>
+
+              <div className="grid lg:grid-cols-2 gap-16 md:gap-32 items-end">
+                <p className="text-2xl md:text-[2.6rem] md:leading-[1.1] font-medium tracking-tight text-slate-500 dark:text-slate-400 max-w-3xl">
+                  Specializing in bridging the gap between <span className="text-slate-900 dark:text-white font-extrabold">complex backend architecture</span> and <span className="text-slate-900 dark:text-white font-extrabold">intelligent agentic workflows.</span>
+                </p>
+                
+                <div className="flex flex-wrap gap-8 lg:justify-end pb-4">
+                  <a href="#work" className="px-16 py-8 bg-brand text-white font-extrabold uppercase tracking-[0.3em] rounded-full hover:scale-105 transition-all shadow-2xl shadow-brand/30 text-xs">
+                    View Exhibition
+                  </a>
+                  <a href="#connect" className={`px-16 py-8 border font-extrabold uppercase tracking-[0.3em] transition-all text-xs ${isDark ? 'border-slate-800 text-white hover:bg-white hover:text-black' : 'border-slate-200 text-slate-900 hover:bg-black hover:text-white rounded-full bg-white shadow-xl'}`}>
+                    Initiate Connection
+                  </a>
+                </div>
+              </div>
+           </motion.div>
+        </div>
+      </section>
+
+      {/* Expertise Section */}
+      <section id="arsenal" className={`py-48 px-6 ${isDark ? 'bg-[#050505]' : 'bg-white border-y border-slate-100 shadow-sm'}`}>
+        <div className="max-w-[1400px] mx-auto">
+          <div className="mb-32 flex flex-col lg:flex-row lg:items-end justify-between gap-16">
+            <div className="max-w-2xl">
+              <span className="text-[11px] font-black uppercase tracking-[0.6em] text-brand mb-8 block">Capabilities</span>
+              <h2 className="text-5xl md:text-[8rem] font-display font-extrabold tracking-tighter uppercase leading-none">The Arsenal.</h2>
+            </div>
+            <p className={`text-xl md:text-2xl font-medium max-w-md ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+              Mastering high-throughput systems architecture and autonomous decision logic.
+            </p>
           </div>
-          {PROJECTS.map((p, i) => (
-            <ProjectFeature key={p.id} project={p} index={i} />
-          ))}
-        </section>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
+            {Array.from(new Set(SKILLS.map(s => s.category))).map(cat => (
+              <div key={cat} className={`p-12 border transition-all group ${isDark ? 'bg-black border-slate-900' : 'bg-cream/40 border-slate-100 rounded-[3rem] hover:bg-white hover:shadow-2xl'}`}>
+                <div className="mb-10 w-16 h-16 flex items-center justify-center bg-brand/10 text-brand rounded-3xl group-hover:scale-110 transition-transform duration-500">
+                  <Code2 size={32} />
+                </div>
+                <h3 className="text-2xl font-display font-extrabold mb-10 tracking-tight uppercase leading-tight">{cat}</h3>
+                <ul className="space-y-5">
+                  {SKILLS.filter(s => s.category === cat).map(s => (
+                    <li key={s.name} className={`flex items-center gap-4 text-sm font-medium ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                      <div className="w-2 h-2 rounded-full bg-brand" /> {s.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-        <Automation />
-        
-        <section className="py-24 md:py-40 px-6 md:px-16 bg-zinc-950/50 border-y border-white/5">
-           <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 md:gap-32 items-center">
-              <div className="space-y-12">
-                 <div>
-                    <h3 className="text-3xl md:text-5xl font-black font-display uppercase italic tracking-tighter text-white mb-6">Philosophy.</h3>
-                    <p className="text-gray-400 font-light text-base md:text-xl leading-relaxed italic">
-                      "If it’s repeatable, it’s automatable. If it’s complex, it’s an <span className="text-white">AI use-case</span>."
-                    </p>
-                 </div>
-                 <div className="space-y-8">
-                    <div className="border-l border-[#E50914] pl-8 transition-all hover:pl-10">
-                       <h4 className="text-[9px] font-black text-[#E50914] uppercase tracking-[0.3em] mb-3 italic">Production Readiness</h4>
-                       <p className="text-gray-500 font-light text-sm leading-relaxed">Building systems with meaningful commit history, defensive error handling, and documentation that survives the test of scale.</p>
-                    </div>
-                 </div>
-              </div>
-              <div className="relative p-10 bg-black border border-white/5 overflow-hidden group">
-                 <div className="absolute top-0 right-0 p-4 font-mono text-[9px] text-[#E50914]/30 group-hover:text-[#E50914]/60 transition-colors">TERMINAL_OVRD.V4</div>
-                 <div className="space-y-4 font-mono text-[10px] md:text-[11px]">
-                    <div className="flex gap-3">
-                       <span className="text-[#E50914]">~</span>
-                       <span className="text-white">init --autonomous-mode</span>
-                    </div>
-                    <p className="text-gray-500">[INFO] Verifying Neural Context Architecture...</p>
-                    <p className="text-gray-500">[INFO] Syncing RAG Databases with System Ops...</p>
-                    <div className="w-full h-px bg-white/5 relative my-6">
-                       <motion.div 
-                         initial={{ width: 0 }} whileInView={{ width: '100%' }} transition={{ duration: 1.5, ease: "easeInOut" }}
-                         className="absolute top-0 left-0 h-full bg-[#E50914] pointer-events-none"
-                       />
-                    </div>
-                    <p className="text-white font-black tracking-widest uppercase">[DEPLOYMENT READY] AMBUJ_PROTOCOL_LOADED</p>
-                 </div>
-              </div>
+      {/* Work Section */}
+      <section id="work" className="py-48 overflow-hidden bg-white dark:bg-black">
+        <div className="max-w-7xl mx-auto px-6 mb-20 flex flex-col md:flex-row md:items-end justify-between gap-12">
+           <div>
+              <span className="text-[11px] font-black uppercase tracking-[0.6em] text-brand mb-8 block">Selected Work</span>
+              <h2 className="text-6xl md:text-9xl font-display font-extrabold tracking-tighter uppercase leading-none">Systems.</h2>
            </div>
-        </section>
+           <div className="flex items-center gap-5 text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">
+              <Monitor size={18} className="text-brand" /> Interactive Stream
+           </div>
+        </div>
+        <ProjectCarousel isDark={isDark} />
+      </section>
 
-        <Contact />
-      </main>
+      {/* Infrastructure Section - Optimized for All Screens */}
+      <section id="systems" className={`py-48 px-6 ${isDark ? 'bg-[#050505]' : 'bg-white'}`}>
+        <div className="max-w-[1400px] mx-auto">
+          <div className="mb-24 lg:mb-32">
+             <span className="text-[11px] font-black uppercase tracking-[0.6em] text-brand mb-8 block">Infrastructure</span>
+             <h2 className="text-5xl md:text-7xl lg:text-[9rem] font-display font-extrabold tracking-tighter uppercase leading-[0.9] break-words">Logic Matrix.</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+            {AUTOMATION_TOOLS.map((tool, i) => (
+              <a key={tool.title} href={tool.link} target="_blank" className={`p-10 md:p-14 border transition-all group flex flex-col ${isDark ? 'bg-black border-slate-900 rounded-none' : 'bg-cream/40 border-slate-100 rounded-[4rem] hover:bg-white hover:shadow-2xl'}`}>
+                <div className="w-16 md:w-20 h-16 md:h-20 flex items-center justify-center bg-brand/10 text-brand rounded-3xl mb-12 group-hover:scale-110 transition-transform duration-500">
+                  {i === 0 ? <Terminal size={32} /> : i === 1 ? <Zap size={32} /> : <Layers size={32} />}
+                </div>
+                <h4 className="text-2xl md:text-3xl font-display font-extrabold mb-8 tracking-tight uppercase group-hover:text-brand transition-colors leading-tight">{tool.title}</h4>
+                <p className={`text-base md:text-lg leading-relaxed mb-16 flex-1 ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                  {tool.description}
+                </p>
+                <div className="flex items-center gap-6 text-[11px] font-black uppercase tracking-[0.4em] text-brand group-hover:gap-10 transition-all">
+                   Audit System <ArrowRight size={18} />
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer - Redesigned to be Minimalist, Stylish & Professional */}
+      <footer id="connect" className={`pt-48 pb-20 px-6 ${isDark ? 'bg-black' : 'bg-[#FAFAFA]'}`}>
+        <div className="max-w-[1400px] mx-auto">
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-20 mb-32">
+             <div className="flex-1">
+                <span className="text-[11px] font-black uppercase tracking-[0.8em] text-brand mb-10 block">Connection Protocol</span>
+                <h2 className="text-6xl md:text-[10rem] font-display font-extrabold tracking-tighter leading-[0.8] uppercase mb-16">
+                  Let's <br /> <span className="text-brand">Engineer.</span>
+                </h2>
+                <a href="mailto:ambujkr8@gmail.com" className="inline-flex items-center gap-6 md:gap-10 text-3xl md:text-6xl font-display font-extrabold uppercase tracking-tighter hover:text-brand transition-all group">
+                   Get in touch <ArrowRight size={48} className="text-brand group-hover:translate-x-4 transition-transform hidden md:block" />
+                   <ArrowRight size={32} className="text-brand group-hover:translate-x-2 transition-transform md:hidden" />
+                </a>
+             </div>
+             
+             <div className="flex flex-col gap-12 lg:items-end">
+                <span className="block text-[10px] font-black uppercase tracking-[0.5em] text-brand lg:text-right">Social Network</span>
+                <div className="flex gap-4 md:gap-6">
+                   {[
+                     { icon: <Github size={24} />, href: 'https://github.com/Ambujkumar909/', label: 'Github' },
+                     { icon: <Linkedin size={24} />, href: 'https://www.linkedin.com/in/ambuj-kumar-80144b200/', label: 'LinkedIn' },
+                     { icon: <Mail size={24} />, href: 'mailto:ambujkr8@gmail.com', label: 'Email' }
+                   ].map((social, i) => (
+                     <a key={i} href={social.href} target="_blank" aria-label={social.label} 
+                        className={`p-6 md:p-8 border transition-all ${
+                          isDark 
+                          ? 'border-zinc-800 bg-zinc-900 text-white hover:border-brand hover:bg-brand/10' 
+                          : 'border-slate-200 bg-white text-slate-900 hover:border-brand hover:shadow-xl shadow-sm'
+                        } rounded-full group`}>
+                        <div className="group-hover:scale-110 transition-transform duration-300">
+                          {social.icon}
+                        </div>
+                     </a>
+                   ))}
+                </div>
+                <div className="mt-8 lg:text-right">
+                  <p className={`text-xs font-bold uppercase tracking-widest leading-loose ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>
+                    Open for high-density <br /> systems architecture and <br /> agentic workflow inquiries.
+                  </p>
+                </div>
+             </div>
+          </div>
+          
+          <div className={`pt-12 border-t flex flex-col md:flex-row justify-between items-center gap-12 text-[10px] font-bold uppercase tracking-[0.6em] ${isDark ? 'border-zinc-900 text-zinc-700' : 'border-slate-200 text-slate-400'}`}>
+            <BrandIdentity isDark={isDark} />
+            
+            <div className="flex gap-16 order-3 md:order-2">
+               <span className="flex items-center gap-3">Deployment v2.5 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" /></span>
+               <span>© 2025 Ambuj Kumar</span>
+            </div>
+
+            <button 
+              onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} 
+              className="flex items-center gap-4 group hover:text-brand transition-colors order-2 md:order-3"
+            >
+               Return Origin <ArrowRight size={14} className="-rotate-90 group-hover:-translate-y-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

@@ -1,78 +1,63 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ambuj Kumar | Engineering Autonomy</title>
-    <link rel="icon" href="/portfolio-logo.ico" />
-    <link rel="icon" type="image/png" href="/short_png.png" />
-    <link rel="apple-touch-icon" href="/apple_size_png.png" />
+    <title>Ambuj Kumar | Systems & Automation Engineer</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23EF4444%22/><text x=%2250%%22 y=%2255%%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22sans-serif%22 font-weight=%22900%22 font-size=%2265%22>A</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23EF4444%22/><text x=%2250%%22 y=%2255%%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22sans-serif%22 font-weight=%22900%22 font-size=%2265%22>A</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: '#EF4444',
+                        cream: '#FDFCFB',
+                        obsidian: '#050505',
+                    },
+                    animation: {
+                        'infinite-scroll': 'infinite-scroll 80s linear infinite',
+                        'fast-scroll': 'infinite-scroll 20s linear infinite',
+                    },
+                    keyframes: {
+                        'infinite-scroll': {
+                            from: { transform: 'translateX(0)' },
+                            to: { transform: 'translateX(-33.33%)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --netflix-red: #E50914;
-            --dark-bg: #000000;
-        }
-        * {
-            -webkit-tap-highlight-color: transparent;
-        }
         body {
-            background-color: var(--dark-bg);
-            color: #ffffff;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow-x: hidden;
-            cursor: default;
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFCFB;
+            transition: background-color 0.8s ease;
         }
-        @media (min-width: 768px) {
-            body { cursor: none; }
+        .dark body {
+            background-color: #050505;
         }
         .font-display {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        /* Refined Cinematic Grain */
-        .grain::after {
-            content: "";
-            position: fixed;
-            top: -150%;
-            left: -150%;
-            width: 300%;
-            height: 300%;
-            background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-            opacity: 0.04;
-            pointer-events: none;
-            z-index: 9999;
-            animation: grain 12s steps(10) infinite;
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .pause-scroll:hover .scroll-content {
+            animation-play-state: paused;
         }
-        @keyframes grain {
-            0%, 100% { transform:translate(0, 0) }
-            10% { transform:translate(-5%, -10%) }
-            20% { transform:translate(-15%, 5%) }
-            30% { transform:translate(7%, -25%) }
-            40% { transform:translate(-5%, 25%) }
-            50% { transform:translate(-15%, 10%) }
-            60% { transform:translate(15%, 0%) }
-            70% { transform:translate(0%, 15%) }
-            80% { transform:translate(3%, 35%) }
-            90% { transform:translate(-10%, 10%) }
-        }
-        @keyframes scan {
-            0% { transform: translateY(-100%); opacity: 0; }
-            50% { opacity: 0.5; }
-            100% { transform: translateY(100%); opacity: 0; }
-        }
-        ::-webkit-scrollbar {
-            width: 3px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #000;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--netflix-red);
-        }
-        html {
-            scroll-behavior: smooth;
+        
+        .reveal-text {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         }
     </style>
 <script type="importmap">
@@ -89,9 +74,8 @@
 }
 </script>
 </head>
-<body class="grain">
+<body class="bg-cream text-slate-900 dark:bg-obsidian dark:text-slate-100 antialiased overflow-x-hidden selection:bg-brand selection:text-white">
     <div id="root"></div>
-    <!-- Entry point for Vite -->
     <script type="module" src="./index.tsx"></script>
 </body>
 </html>

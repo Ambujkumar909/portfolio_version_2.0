@@ -12,7 +12,7 @@ export const SKILLS: Skill[] = [
   { name: 'Prompt Eng.', category: 'GenAI & Agents' },
   
   // Backend & Systems
-    { name: 'FastAPI', category: 'Backend & Systems' },
+  { name: 'FastAPI', category: 'Backend & Systems' },
   { name: 'Flask', category: 'Backend & Systems' },
   { name: 'C++ Systems', category: 'Backend & Systems' },
   { name: 'MySQL', category: 'Backend & Systems' },
@@ -60,14 +60,15 @@ export const PROJECTS: Project[] = [
     image: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80&w=1974&auto=format&fit=crop'
   },
   {
-    id: 'agentic-arch',
-    title: 'Agentic Workflows',
-    subtitle: 'Multi-Agent Decision Systems',
-    context: 'Static AI chatbots often fail at complex, multi-step tasks.',
-    solution: 'Developed sophisticated reasoning agents using LangGraph that can use tools, self-correct, and execute long-term goals.',
-    tech: ['LangGraph', 'n8n', 'Python', 'Agentic Logic'],
-    impact: 'Automates long-horizon tasks with human-level accuracy.',
-    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop'
+    id: 'smart-sales',
+    title: 'Smart Sales Automation',
+    subtitle: 'Agentic Workflows',
+    context: 'Manual lead generation and social outreach are time-consuming and inefficient.',
+    solution: 'Built a smart sales automation system using Playwright for content scraping, Telegram agents for real-time alerts, and social media integration to automate the entire sales cycle.',
+    tech: ['Playwright', 'Telegram API', 'Python', 'Social Automation'],
+    impact: 'End-to-end automated sales pipeline with zero manual intervention.',
+    link: 'https://github.com/Ambujkumar909/smart-sales-automation',
+    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2026&auto=format&fit=crop'
   }
 ];
 
