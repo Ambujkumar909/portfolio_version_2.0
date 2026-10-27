@@ -96,17 +96,6 @@ export default function CaseStudy({ slug }: { slug: string }) {
       </>
     ),
   });
-  sections.push({
-    label: 'Interface', title: [<>On <Gold>screen</Gold></>],
-    // TODO(ambuj): add screenshots
-    body: (
-      <div className="grid gap-6 sm:grid-cols-2">
-        {[0, 1].map((k) => (
-          <div key={k} className="label grid aspect-video place-items-center rounded-lg border border-line bg-elevated text-faint">Screenshot · TODO</div>
-        ))}
-      </div>
-    ),
-  });
 
   return (
     <article key={f.slug}>

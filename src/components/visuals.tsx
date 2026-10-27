@@ -325,34 +325,49 @@ export function StackVisual({ name, stack }: { name: string; stack: string[] }) 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => setGap(Math.max(12, Math.min(40, el.clientWidth * 0.032))));
+    const ro = new ResizeObserver(() => setGap(Math.max(10, Math.min(34, el.clientWidth * 0.026))));
     ro.observe(el);
     return () => ro.disconnect();
   }, [ref]);
   return (
-    <div ref={ref} className={`${frame} grid place-items-center`} role="img" aria-label={`${name} stack: ${stack.join(', ')}`}>
-      <div aria-hidden className="absolute inset-0" style={{ background: 'radial-gradient(45% 55% at 50% 58%, var(--wash-a), transparent 72%)' }} />
-      <div aria-hidden className="relative aspect-square w-[min(64%,400px)] [perspective:1400px]" style={{ marginTop: `${layers.length * gap * 0.35}px` }}>
+    <div ref={ref} className={`${frame} grid grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-center gap-3 px-4 pb-10 pt-4 sm:gap-6 sm:px-8`} role="img" aria-label={`${name} stack: ${stack.join(', ')}`}>
+      <div aria-hidden className="absolute inset-0" style={{ background: 'radial-gradient(40% 55% at 30% 55%, var(--wash-a), transparent 72%)' }} />
+      {/* the slabs */}
+      <div aria-hidden className="relative mx-auto aspect-square w-full max-w-[360px] [perspective:1400px]" style={{ marginTop: `${layers.length * gap * 0.35}px` }}>
         <div className="absolute inset-0 preserve-3d" style={{ transform: 'rotateX(58deg) rotateZ(-40deg)' }}>
           {layers.map((s, i) => {
             const top = i === layers.length - 1;
             return (
               <motion.div
                 key={s}
-                className={`absolute inset-[14%] flex items-end justify-start rounded-md border px-3 py-2 preserve-3d ${top ? 'border-accent bg-accent-soft' : 'border-line-strong bg-elevated/90'}`}
+                className={`absolute inset-[12%] flex items-end rounded-md border px-2 py-1.5 preserve-3d ${top ? 'border-accent bg-accent-soft' : 'border-line-strong bg-elevated/90'}`}
                 style={{ boxShadow: top ? '0 0 40px var(--wash-a)' : undefined }}
                 initial={reduce ? false : { z: -40, opacity: 0 }}
                 animate={on ? { z: i * gap, opacity: 1 } : undefined}
                 transition={{ duration: 1.1, ease: EASE_EXPO, delay: 0.15 + i * 0.12 }}
               >
-                {(top || gap >= 22) && <span className={`font-mono text-[10px] uppercase tracking-[0.12em] sm:text-[11px] ${top ? 'text-accent' : 'text-muted'}`}>{s}</span>}
+                {(top || gap >= 18) && <span className={`font-mono text-[9px] tabular sm:text-[10px] ${top ? 'text-accent' : 'text-faint'}`}>{String(i + 1).padStart(2, '0')}</span>}
               </motion.div>
             );
           })}
         </div>
       </div>
-      <p aria-hidden className="label absolute bottom-4 left-5 text-faint">{name} · stack</p>
-      <p aria-hidden className="label absolute bottom-4 right-5 text-faint">{String(stack.length).padStart(2, '0')} layers</p>
+      {/* the names, always legible: top layer first, numbered to match the slabs */}
+      <ol aria-hidden className="relative w-full min-w-0 max-w-sm">
+        {layers.map((s, i) => ({ s, i })).reverse().map(({ s, i }, k) => {
+          const top = i === layers.length - 1;
+          return (
+            <motion.li key={s} className="flex items-baseline gap-2.5 border-b border-line py-1.5 last:border-0 sm:gap-3 sm:py-2.5"
+              initial={reduce ? false : { opacity: 0, x: 10 }} animate={on ? { opacity: 1, x: 0 } : undefined}
+              transition={{ duration: 0.8, ease: EASE_EXPO, delay: 0.3 + k * 0.08 }}>
+              <span className={`font-mono text-[9px] tabular sm:text-[10px] ${top ? 'text-accent' : 'text-faint'}`}>{String(i + 1).padStart(2, '0')}</span>
+              <span className={`min-w-0 break-words font-mono text-[10px] uppercase leading-snug tracking-[0.08em] sm:text-[12px] ${top ? 'text-accent' : 'text-ink'}`}>{s}</span>
+            </motion.li>
+          );
+        })}
+      </ol>
+      <p aria-hidden className="label absolute bottom-3.5 left-4 text-faint sm:left-8">Stack</p>
+      <p aria-hidden className="label absolute bottom-3.5 right-4 text-faint sm:right-8">{String(stack.length).padStart(2, '0')} layers</p>
     </div>
   );
 }
