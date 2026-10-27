@@ -305,10 +305,10 @@ export const CASES: Case[] = [
   {
     slug: 'pricelens', name: 'PriceLens', full: 'Competitive price intelligence',
     kicker: 'Verifies → marketplace prices',
-    pitch: 'For every Tata CLIQ product, finds the exact same SKU on Myntra and Ajio, proves the match, and shows the price gap.',
-    stack: ['Next.js', 'Fastify', 'Node.js', 'Redis', 'Docker'], role: ROLE, context: 'Price intelligence for Tata CLIQ',
+    pitch: 'For every product on one of India’s largest fashion marketplaces, finds the exact same SKU on two rival fashion giants, proves the match, and shows the price gap.',
+    stack: ['Next.js', 'Fastify', 'Node.js', 'Redis', 'Docker'], role: ROLE, context: 'Price intelligence for one of India’s largest fashion marketplaces',
     cost: ['The same style sells on three platforms under three titles, three colour names and sometimes three MRPs.', 'Pricing teams were flying blind.'],
-    built: ['Paste any Tata CLIQ link: PriceLens fetches it and matches the exact SKU on Myntra and Ajio, live.', 'A full comparison of pricing and offers, specifications and content quality, with an AI decision summary and one-click links to verify each listing.', 'Excel and PDF exports filtered by category, brand and price band, leading with who is cheapest and the size of the gap.'],
+    built: ['Paste any product link: PriceLens fetches it and matches the exact SKU on two rival fashion giants, live.', 'A full comparison of pricing and offers, specifications and content quality, with an AI decision summary and one-click links to verify each listing.', 'Excel and PDF exports filtered by category, brand and price band, leading with who is cheapest and the size of the gap.'],
     decisions: [
       { title: 'SKU-level or nothing', body: 'Matches are proven at the exact-SKU level, not “looks similar”, and every claim is one click from the live listing.' },
       { title: 'Pure HTTP', body: 'No headless browser anywhere in the stack. Data that cannot be read shows as “not available”, never as a guess.' },
@@ -469,7 +469,7 @@ export const ALL_CASES: Case[] = [...FLAGSHIPS, ...CASES];
 export const EXPERIENCE = [
   {
     company: "D'Decor Home Fabrics",
-    note: "India's largest home-furnishing fabric manufacturer",
+    note: "India’s largest home-furnishing fabric manufacturer",
     role: 'AI & Systems Engineer',
     period: 'Jun – Aug 2026',
     place: 'Mumbai',
@@ -512,7 +512,7 @@ export const INDEX: IndexItem[] = [
   { name: 'Demand Forecasting', line: 'Probable demand ranges for ~21,000 SKUs', domain: 'Supply chain', stack: ['Python', 'LightGBM'], slug: 'demand-forecasting' },
   { name: 'Reorder Automation', line: 'Forecasts into purchase and production orders', domain: 'Supply chain', stack: ['Python'], slug: 'reorder-automation' },
   { name: 'Asset Vault', line: 'Digital asset management with search inside PDF and Office files', domain: 'Retail', stack: ['NestJS', 'PostgreSQL', 'Prisma', 'BullMQ', 'Redis'], slug: 'asset-vault' },
-  { name: 'PriceLens', line: 'Finds the exact same SKU on Myntra and Ajio for a Tata CLIQ product, with the price gap and a confidence score', domain: 'Retail', stack: ['Next.js', 'Fastify', 'Node.js', 'Redis', 'Docker'], slug: 'pricelens' },
+  { name: 'PriceLens', line: 'Finds the exact same SKU across three of India’s fashion giants, with the price gap and a confidence score', domain: 'Retail', stack: ['Next.js', 'Fastify', 'Node.js', 'Redis', 'Docker'], slug: 'pricelens' },
   { name: 'Spykar IQ', line: 'One view of stock for a national apparel chain, queried in plain language', domain: 'Retail', stack: ['Next.js', 'Express', 'PostgreSQL', 'SQL Server', 'Gemini'], slug: 'spykar-iq' },
   { name: 'B2B Dealer Portal', line: 'Kept channel-partner orders flowing during Salesforce B2B maintenance', domain: 'Supply chain', stack: ['Node.js', 'Express', 'PostgreSQL', 'SQL Server'], slug: 'b2b-dealer-portal' },
   { name: 'WhatsApp Marketing Platform', line: 'An in-house replacement for Salesforce Marketing Cloud', domain: 'Retail', stack: ['Node.js', 'Express', 'Socket.IO', 'PostgreSQL', 'Baileys'], slug: 'whatsapp-marketing' },
