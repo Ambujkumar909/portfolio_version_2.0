@@ -1,68 +1,196 @@
+@import "tailwindcss";
+
+/* ── Design tokens: "Obsidian & Champagne" ─────────────────────────────── */
+/* Runtime theme values. Dark = "Obsidian & Champagne", light = "Ivory & Bronze". */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --bg: #07080a;
+  --elevated: #0e1014;
+  --raised: #151820;
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.14);
+  --ink: #eeeae3;
+  --muted: #8b9099;
+  /* brief asks #5A5F68; lifted so small labels pass 4.5:1 */
+  --faint: #7d818a;
+  --accent: #cdae7a;
+  --accent-soft: rgba(205, 174, 122, 0.12);
+  --signal: #8fd3e8;
+  --wash-a: rgba(205, 174, 122, 0.07);
+  --wash-b: rgba(238, 234, 227, 0.04);
+  --shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.8);
+  --studio: radial-gradient(75% 55% at 50% 30%, #3b3630 0%, #1f1e1c 50%, #121315 100%);
+  --studio-end: #121315;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #f4f1ec;
+  --elevated: #fbf9f6;
+  --raised: #ece7df;
+  --line: rgba(14, 16, 20, 0.08);
+  --line-strong: rgba(14, 16, 20, 0.16);
+  --ink: #101216;
+  --muted: #555a63;
+  --faint: #666b74;
+  --accent: #846431;
+  --accent-soft: rgba(132, 100, 49, 0.12);
+  --signal: #2c7c96;
+  --wash-a: rgba(205, 174, 122, 0.26);
+  --wash-b: rgba(255, 255, 255, 0.75);
+  --shadow: 0 30px 80px -40px rgba(60, 45, 20, 0.35);
+  --studio: radial-gradient(75% 55% at 50% 30%, #fffdf9 0%, #efe9df 55%, #e2d9cb 100%);
+  --studio-end: #e2d9cb;
+  color-scheme: light;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+@theme {
+  --color-*: initial;
+  --color-bg: var(--bg);
+  --color-elevated: var(--elevated);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-signal: var(--signal);
+  --color-black: #000;
+  --color-white: #fff;
+  --color-transparent: transparent;
+  --color-current: currentColor;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+@theme {
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, monospace;
+
+  --text-hero: clamp(3.25rem, 9vw, 10.5rem);
+  --text-hero--line-height: 0.9;
+  --text-hero--letter-spacing: -0.025em;
+  --text-h2: clamp(2.75rem, 6vw, 6.5rem);
+  --text-h2--line-height: 0.95;
+  --text-h2--letter-spacing: -0.02em;
+  --text-h3: clamp(2rem, 3.6vw, 3.5rem);
+  --text-h3--line-height: 1;
+  --text-h3--letter-spacing: -0.015em;
+  --text-stat: clamp(2rem, 4.6vw, 4.5rem);
+  --text-stat--line-height: 1;
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1rem;
+  --text-label--letter-spacing: 0.14em;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --container-site: 1320px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* ── Base ──────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
-  a:hover {
-    color: #747bff;
+  body {
+    font-family: var(--font-sans);
+    background: var(--color-bg);
+    overflow-x: clip;
+    min-width: 320px;
   }
-  button {
-    background-color: #f9f9f9;
+  ::selection {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+  }
+  :focus-visible {
+    outline: 1px solid var(--color-accent);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+}
+
+/* ── Utilities ─────────────────────────────────────────────────────────── */
+@utility wrap {
+  width: 100%;
+  max-width: var(--container-site);
+  margin-inline: auto;
+  padding-inline: 16px;
+  @media (width >= 48rem) { padding-inline: 32px; }
+  @media (width >= 80rem) { padding-inline: 40px; }
+}
+
+/* mono eyebrow label */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--text-label--letter-spacing);
+  text-transform: uppercase;
+}
+
+/* hairline underline that draws left → right */
+@utility link-draw {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 400ms var(--ease-expo), color 180ms;
+  &:hover, &:focus-visible { background-size: 100% 1px; }
+}
+
+@utility tabular { font-variant-numeric: tabular-nums; }
+
+/* ── Film grain (static: an animated full-screen layer costs scroll smoothness) ── */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+:root[data-theme="light"] .grain { opacity: 0.05; mix-blend-mode: multiply; }
+
+/* ── Ambient gradient washes (light-gradient transitions between sections) ── */
+@utility wash-tl { background: radial-gradient(60% 50% at 10% 0%, var(--wash-a), transparent 70%), radial-gradient(40% 40% at 95% 60%, var(--wash-b), transparent 70%); }
+@utility wash-tr { background: radial-gradient(55% 50% at 90% 10%, var(--wash-b), transparent 70%), radial-gradient(45% 45% at 5% 90%, var(--wash-a), transparent 70%); }
+@utility wash-c { background: radial-gradient(50% 45% at 50% 50%, var(--wash-a), transparent 70%), radial-gradient(70% 40% at 50% 100%, var(--wash-b), transparent 75%); }
+@utility wash-b { background: radial-gradient(60% 55% at 70% 100%, var(--wash-a), transparent 70%), radial-gradient(40% 40% at 10% 20%, var(--wash-b), transparent 70%); }
+
+/* theme switch: circular reveal via View Transitions (instant fallback) */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(root) { z-index: 2; }
+
+/* 3D tilt surfaces */
+@utility preserve-3d { transform-style: preserve-3d; }
+
+/* capability orbits */
+.orbit-spin { animation: orbit 60s linear infinite; }
+@keyframes orbit { to { transform: rotate(360deg); } }
+
+/* <details> rows: smooth height where supported */
+details.row::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition: block-size 400ms var(--ease-expo), content-visibility 400ms allow-discrete;
+}
+details.row[open]::details-content { block-size: auto; }
+:root { interpolate-size: allow-keywords; }
+details.row summary { list-style: none; }
+details.row summary::-webkit-details-marker { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
