@@ -81,6 +81,7 @@ export function A({ href = '', children, ...rest }: AnchorHTMLAttributes<HTMLAnc
   }
   return (
     <a
+      {...rest}
       href={href}
       onClick={(e) => {
         rest.onClick?.(e);
@@ -88,7 +89,6 @@ export function A({ href = '', children, ...rest }: AnchorHTMLAttributes<HTMLAnc
         e.preventDefault();
         navigate(href);
       }}
-      {...rest}
     >
       {children}
     </a>
