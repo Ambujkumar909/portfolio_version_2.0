@@ -2,14 +2,13 @@ import { useState } from 'react';
 import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion';
 import { DOMAINS, FLAGSHIPS, INDEX, LANGUAGES, ORBITS, type Domain, type Flagship, type IndexItem } from '../content';
 import { EASE_EXPO, finePointer } from '../lib';
-import { Character } from './Character';
 import { VISUALS } from './visuals';
 import { A, Arrow, Fade, Reveal, SectionHead, Tilt, btnLine } from './ui';
 
 const gold = (w: string) => <em className="italic text-accent">{w}</em>;
 
 // ── 03 · Featured systems ("Replaced") ─────────────────────────────────────
-// Sticky stacking cards: native scroll, no hijacking. The profile figure on the left looks at them.
+// Sticky stacking cards: native scroll, no hijacking.
 
 function Panel({ f, i }: { f: Flagship; i: number }) {
   const V = VISUALS[f.slug];
@@ -57,24 +56,15 @@ export function Featured() {
       <div className="wrap py-24 md:py-40">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-4">
-            {/* as on laptop: label + headline on top; the figure below, looking right at the content */}
             <div className="lg:sticky lg:top-28">
               <p className="label mb-6 text-faint"><span className="text-accent">01</span> / Featured systems</p>
               <Reveal as="h2" className="font-display text-h2" lines={[<span id="work-title">Four systems,</span>, <>{gold('replaced')}.</>]} />
-              <div className="mt-8 flex items-center gap-5 sm:gap-8 lg:block">
-                <div className="shrink-0">
-                  <Character pose="present" className="h-[min(48svh,360px)] sm:h-[min(52svh,420px)] lg:h-[min(60svh,540px)]" />
-                </div>
-                <Fade className="min-w-0 flex-1 max-w-[40ch] leading-relaxed text-muted lg:hidden">
-                  Each one started as a licence, a workaround or a blind spot. Each one now runs on software the company owns.
-                </Fade>
-              </div>
+              <Fade className="mt-8 max-w-[40ch] text-lg leading-relaxed text-muted">
+                Each one started as a licence, a workaround or a blind spot. Each one now runs on software the company owns.
+              </Fade>
             </div>
           </div>
           <div className="lg:col-span-8">
-          <Fade className="mb-8 hidden max-w-[52ch] text-lg leading-relaxed text-muted lg:mb-10 lg:block">
-            Each one started as a licence, a workaround or a blind spot. Each one now runs on software the company owns.
-          </Fade>
           <ol className="grid gap-6 lg:gap-10">
             {FLAGSHIPS.map((f, i) => (
               <li key={f.slug} className="lg:[@media(min-height:760px)]:sticky" style={{ top: `${96 + i * 18}px` }}>
@@ -195,12 +185,7 @@ export function Capabilities() {
         aside="Five orbits around the languages underneath them. Choose one to bring it forward." />
 
       <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
-        {/* thinking portrait on the left, looking toward the orbits */}
-        <div className="hidden lg:col-span-3 lg:block">
-          <Character pose="think" className="w-full" />
-        </div>
-
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-7">
           <svg viewBox="0 0 600 300" className="w-full overflow-visible" role="img" aria-label={`Technology orbits; ${group.name} highlighted`}>
             <defs>
               <radialGradient id="core" cx="50%" cy="50%" r="50%">
@@ -233,7 +218,7 @@ export function Capabilities() {
           <p className="mt-6 text-center font-mono text-[11px] leading-relaxed text-muted">{LANGUAGES.join(' · ')}</p>
         </div>
 
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-5">
           <div role="group" aria-label="Capability groups" className="flex flex-wrap gap-2 lg:flex-col lg:gap-0 lg:border-t lg:border-line">
             {ORBITS.map((o, i) => {
               const on = i === active;

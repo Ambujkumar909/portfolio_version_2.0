@@ -1,4 +1,3 @@
-import { Character } from '../components/Character';
 import { A, Arrow, Fade, Magnetic, Reveal, btnSolid } from '../components/ui';
 import { useMeta } from '../lib';
 
@@ -6,7 +5,6 @@ export default function NotFound() {
   useMeta('404 – Ambuj Kumar', "This route isn't in production yet.");
   return (
     <section className="wrap flex min-h-[100svh] flex-col items-center justify-center gap-10 pt-32 pb-24 text-center">
-      <Character pose="shrug" className="h-[46svh] max-h-[460px]" />
       <div>
         <p className="label mb-6 text-accent">404</p>
         <Reveal

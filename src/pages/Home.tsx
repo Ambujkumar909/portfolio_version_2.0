@@ -2,25 +2,67 @@ import { useRef, useState } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { ABOUT, EXPERIENCE, PERSON, RECOGNITION } from '../content';
 import { EASE_EXPO, useMeta, useReady } from '../lib';
-import { Character } from '../components/Character';
-import { HeroStage } from '../components/HeroStage';
-import { A, Arrow, Fade, Magnetic, Reveal, SectionHead, btnLine, btnSolid } from '../components/ui';
+import { A, Arrow, Fade, Magnetic, Reveal, SectionHead, Tilt, btnLine, btnSolid } from '../components/ui';
 import { Capabilities, Featured, IndexTable } from '../components/Work';
 
 const gold = (w: string) => <em className="italic text-accent">{w}</em>;
 
 // Narrative order (by design): claim → the work (peak attention, with its numbers) → the person →
-// track record → depth → capability → recognition → ask. Portraits are placed so their
-// gaze points at what the reader should look at next.
+// track record → depth → capability → recognition → ask. One photograph, in the hero only.
 
 // ── 01 · Hero ─────────────────────────────────────────────────────────────
+// The one photograph on the site: framed like a print, revealed once, floating on a champagne glow.
+function Portrait({ ready }: { ready: boolean }) {
+  const reduce = useReducedMotion();
+  const chip = 'absolute z-10 flex items-center gap-2 whitespace-nowrap rounded-full border border-line-strong bg-bg/75 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-ink backdrop-blur-md [box-shadow:var(--shadow)] sm:px-3.5 sm:py-2 sm:text-[11px]';
+  const pop = (d: number) => ({
+    initial: reduce ? false : { opacity: 0, y: 12, scale: 0.96 },
+    animate: ready ? { opacity: 1, y: 0, scale: 1 } : undefined,
+    transition: { duration: 0.9, ease: EASE_EXPO, delay: d },
+  } as const);
+  return (
+    <figure className="relative mx-auto w-full max-w-[680px] lg:max-w-none">
+      {/* champagne glow + offset hairline frame (passe-partout) */}
+      <div aria-hidden className="absolute -inset-[12%] -z-10" style={{ background: 'radial-gradient(closest-side, var(--wash-a), transparent)' }} />
+      <motion.div aria-hidden className="absolute -inset-2.5 rounded-[26px] border border-accent/35 sm:-inset-3.5 sm:rounded-[30px]"
+        initial={reduce ? false : { opacity: 0, scale: 0.97 }} animate={ready ? { opacity: 1, scale: 1 } : undefined}
+        transition={{ duration: 1.4, ease: EASE_EXPO, delay: 0.7 }} />
+      <Tilt max={4} className="rounded-[20px]">
+        <motion.div
+          className="relative aspect-square overflow-hidden rounded-[18px] border border-line-strong bg-raised [box-shadow:var(--shadow)] sm:aspect-[4/3] sm:rounded-[20px] md:aspect-[4/5] lg:aspect-[5/4]"
+          initial={reduce ? false : { clipPath: 'inset(100% 0% 0% 0% round 20px)' }}
+          animate={ready ? { clipPath: 'inset(0% 0% 0% 0% round 20px)' } : undefined}
+          transition={{ duration: 1.3, ease: EASE_EXPO, delay: 0.15 }}
+        >
+          <motion.img
+            src="/hero.webp" srcSet="/hero-960.webp 960w, /hero.webp 1536w" sizes="(min-width: 1024px) 48vw, (min-width: 768px) 42vw, 100vw"
+            width={1536} height={1024} alt="Ambuj Kumar at his desk, working on a laptop" fetchPriority="high" decoding="async"
+            className="hero-img absolute inset-0 h-full w-full object-cover object-[46%_40%] lg:object-[40%_42%]"
+            initial={reduce ? false : { scale: 1.16 }} animate={ready ? { scale: 1 } : undefined}
+            transition={{ duration: 2.2, ease: EASE_EXPO, delay: 0.15 }}
+          />
+          <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+        </motion.div>
+        {/* chips float above the print (3D depth inside the tilt) */}
+        <motion.p {...pop(1.1)} className={`${chip} right-3 top-3 sm:-right-4 sm:top-6`} style={{ translateZ: 40 }}>
+          <span className="relative flex h-1.5 w-1.5"><span className="absolute inset-0 animate-ping rounded-full bg-accent opacity-60" /><span className="h-1.5 w-1.5 rounded-full bg-accent" /></span>
+          4 systems replaced
+        </motion.p>
+        <motion.p {...pop(1.25)} className={`${chip} bottom-3 left-3 sm:-left-5 sm:bottom-8`} style={{ translateZ: 60 }}>
+          <span className="text-accent">{PERSON.name}</span><span className="text-faint">·</span>Jaipur, IN
+        </motion.p>
+      </Tilt>
+    </figure>
+  );
+}
+
 function Hero() {
   const ready = useReady();
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
-  const contentY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, -120]);
-  const contentO = useTransform(scrollYProgress, [0, 0.65], [1, 0]);
+  const contentY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, -90]);
+  const contentO = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
   const show = (d: number) => ({
     initial: { opacity: 0, y: reduce ? 0 : 18 },
@@ -29,29 +71,22 @@ function Hero() {
   });
 
   return (
-    <section id="top" ref={ref} aria-labelledby="hero-title" className="relative isolate overflow-hidden lg:min-h-[100svh]">
-      <div aria-hidden className="absolute inset-0 -z-10">
-        <HeroStage />
-        <div className="absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-bg via-bg/60 to-transparent" />
-      </div>
+    <section id="top" ref={ref} aria-labelledby="hero-title" className="relative isolate overflow-hidden">
+      <div aria-hidden className="absolute inset-0 -z-10 wash-tr" />
+      <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-[30%] bg-gradient-to-t from-bg to-transparent" />
 
-      <div className="wrap relative flex flex-col pt-28 md:pt-36 lg:min-h-[100svh] lg:justify-center lg:pb-16 lg:pt-32">
-        {/* the figure faces the reader (eye contact) on the right, planted on the floor (no scroll drift) */}
-        <div className="pointer-events-none order-last -mb-8 mt-4 flex justify-center sm:justify-end lg:absolute lg:bottom-0 lg:right-[3%] lg:z-0 lg:mb-0 lg:mt-0 xl:right-[7%]">
-          <Character pose="hero" priority play={ready} className="h-[min(64svh,560px)] lg:h-[min(88svh,860px)]" />
-        </div>
-
-        <motion.div style={{ y: contentY, opacity: contentO }} className="relative z-10">
-          <motion.p {...show(0)} className="label mb-6 flex max-w-[34ch] flex-wrap items-center gap-x-3 gap-y-1 text-muted md:mb-8 md:max-w-none">
+      <div className="wrap grid items-center gap-12 pb-8 pt-28 md:grid-cols-12 md:gap-8 md:pb-16 md:pt-36 lg:min-h-[100svh] lg:gap-10 lg:pt-28">
+        <motion.div style={{ y: contentY, opacity: contentO }} className="relative z-10 md:col-span-7 lg:col-span-6">
+          <motion.p {...show(0)} className="label mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-muted md:mb-8">
             <span className="h-px w-8 bg-accent" aria-hidden />
-            AI Systems Architect <span className="text-faint">·</span> Generative AI / LLM Engineer
+            <span>AI Systems Architect</span> <span className="hidden text-faint xl:inline">·</span> <span className="w-full pl-11 xl:w-auto xl:pl-0">Generative AI / LLM Engineer</span>
           </motion.p>
           <Reveal
             as="h1"
             play={ready}
             delay={0.08}
             lines={[<span id="hero-title">I build the systems</span>, <>companies stop</>, <>paying {gold('licences')} for.</>]}
-            className="font-display text-hero"
+            className="font-display text-hero md:text-[clamp(3rem,6.6vw,5.5rem)] lg:text-[clamp(3.5rem,5.3vw,7rem)]"
           />
           <motion.p {...show(0.5)} className="mt-8 max-w-[38ch] text-lg leading-relaxed text-muted md:mt-10">
             Enterprise software, designed end to end and run in production. Built to replace the licence, then owned by you.
@@ -60,13 +95,11 @@ function Hero() {
             <Magnetic><A href="/#work" className={btnSolid}>View the work <Arrow /></A></Magnetic>
             <Magnetic><A href={PERSON.resume} className={btnLine}>Download résumé</A></Magnetic>
           </motion.div>
-          <motion.a {...show(0.9)} href="#work" className="mt-14 hidden items-center gap-3 label text-faint transition-colors hover:text-ink lg:inline-flex">
-            <span className="relative block h-8 w-px overflow-hidden bg-line">
-              <motion.span className="absolute inset-x-0 top-0 h-3 bg-accent" animate={reduce ? undefined : { y: [-12, 32] }} transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }} />
-            </span>
-            Scroll
-          </motion.a>
         </motion.div>
+
+        <div className="md:col-span-5 lg:col-span-6 lg:pl-4 xl:pl-8">
+          <Portrait ready={ready} />
+        </div>
       </div>
     </section>
   );
@@ -77,25 +110,11 @@ function About() {
   return (
     <section id="about" aria-labelledby="about-title" className="relative isolate">
       <div aria-hidden className="absolute inset-0 -z-10 wash-tl" />
-      <div className="wrap grid items-center gap-12 py-24 md:grid-cols-12 md:gap-8 md:py-40">
-        {/* portrait left, looking at the words */}
-        <Fade className="md:col-span-5 lg:col-span-5">
-          {/* framed studio portrait: relaxed three-quarter pose, waist-up; backdrop follows the theme */}
-          {/* phones: free-standing figure on the floor glow, like the other placements */}
-          <div className="flex justify-center md:hidden">
-            <Character pose="about" className="h-[min(56svh,460px)]" />
-          </div>
-          <div className="relative mx-auto hidden aspect-[4/5] w-full max-w-[440px] overflow-hidden rounded-t-full border border-line [box-shadow:var(--shadow)] md:block"
-            style={{ background: 'var(--studio)' }}>
-            <div className="absolute left-1/2 top-[7%] h-[175%] -translate-x-[46%]">
-              <Character pose="about" floor={false} className="h-full" />
-            </div>
-            <div aria-hidden className="absolute inset-x-0 bottom-0 h-[38%]" style={{ background: 'linear-gradient(to top, var(--studio-end) 18%, transparent)' }} />
-            <span className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap label text-muted">Jaipur · IST</span>
-          </div>
-        </Fade>
-        <div className="md:col-span-7 lg:col-span-6 lg:col-start-7">
-          <p className="label mb-6 text-faint"><span className="text-accent">02</span> / About</p>
+      <div className="wrap grid gap-6 py-24 md:grid-cols-12 md:gap-8 md:py-40">
+        <div className="md:col-span-4">
+          <p className="label text-faint md:sticky md:top-28"><span className="text-accent">02</span> / About</p>
+        </div>
+        <div className="md:col-span-8">
           <h2 id="about-title" className="sr-only">About Ambuj Kumar</h2>
           <Reveal as="p" className="font-display text-h3 text-ink"
             lines={[<>I start from the business problem,</>, <>work out what it {gold('costs')} today,</>, <>then build the system that removes it.</>]} />
@@ -219,12 +238,8 @@ function Contact() {
   return (
     <section id="contact" aria-labelledby="contact-title" className="relative isolate overflow-hidden border-t border-line">
       <div aria-hidden className="absolute inset-0 -z-10 wash-b" />
-      <div className="wrap grid items-end gap-10 py-24 md:py-40 lg:grid-cols-12 lg:gap-8">
-        {/* portrait left; his gaze leads to the email */}
-        <Fade className="flex justify-center lg:col-span-4 lg:justify-start">
-          <Character pose="contact" className="w-full max-w-[300px] sm:max-w-[380px] lg:max-w-none" />
-        </Fade>
-        <div className="lg:col-span-8">
+      <div className="wrap py-24 md:py-40">
+        <div>
           <p className="label mb-8 text-faint"><span className="text-accent">06</span> / Let’s build the next one</p>
           <Reveal as="h2" className="font-display text-hero" lines={[<span id="contact-title">Have a system</span>, <>worth {gold('owning?')}</>]} />
           <div className="mt-10 md:mt-14">

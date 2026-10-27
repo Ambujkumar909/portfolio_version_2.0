@@ -138,66 +138,85 @@ export function AetherVisual() {
   );
 }
 
-// ── Velocity: 12 tool nodes collapse into one DuckDB query ──────────────────
+// ── Velocity: a branching tool graph (many-to-many) compiles into one DuckDB query ──
 
-const TOOLS = ['Input', 'Filter', 'Join', 'Formula', 'Summarize', 'Sort', 'Sample', 'Union', 'Select', 'Forecast', 'Report', 'Output'];
-const XS = [14, 38, 62, 86];
-const YS = [20, 50, 80];
-// snake layout, left→right then right→left, like a wired canvas
-const SPOTS = TOOLS.map((_, i) => {
-  const row = Math.floor(i / 4); const col = i % 4;
-  return { x: XS[row % 2 ? 3 - col : col], y: YS[row] };
+// four stages, three tools each; every stage fans in and out of the next
+const VX = [38, 119, 201, 282];
+const NODES = [
+  ['Input', 0, 40], ['Select', 0, 100], ['Sample', 0, 160],
+  ['Filter', 1, 40], ['Union', 1, 100], ['Join', 1, 160],
+  ['Formula', 2, 34], ['Summarize', 2, 100], ['Sort', 2, 166],
+  ['Forecast', 3, 40], ['Report', 3, 100], ['Output', 3, 160],
+].map(([name, c, y]) => ({ name: name as string, x: VX[c as number], y: y as number }));
+const EDGES: [number, number][] = [
+  [0, 3], [0, 5], [1, 3], [1, 4], [1, 5], [2, 4], [2, 5],
+  [3, 6], [3, 7], [4, 7], [5, 7], [5, 8],
+  [6, 9], [6, 10], [7, 9], [7, 10], [7, 11], [8, 11],
+];
+const NW = 60, NH = 20;
+const CURVES = EDGES.map(([a, b]) => {
+  const p = NODES[a], q = NODES[b];
+  const x1 = p.x + NW / 2, x2 = q.x - NW / 2, m = (x1 + x2) / 2;
+  return `M${x1} ${p.y} C${m} ${p.y} ${m} ${q.y} ${x2} ${q.y}`;
 });
-const WIRE = SPOTS.map((p) => `${p.x},${p.y}`).join(' ');
 
 export function VelocityVisual() {
-  const { ref, reduce, inView } = useLive<HTMLDivElement>();
+  const { ref, reduce, inView, live } = useLive<HTMLDivElement>();
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    if (reduce || !inView) return;
-    const id = setTimeout(() => setCollapsed((c) => !c), collapsed ? 3600 : 2400);
+    if (!live) { setCollapsed(false); return; }
+    const id = setTimeout(() => setCollapsed((c) => !c), collapsed ? 2800 : 4600);
     return () => clearTimeout(id);
-  }, [collapsed, inView, reduce]);
+  }, [collapsed, live]);
 
-  const done = reduce || collapsed;
+  const drawn = inView || reduce;
   return (
-    <div ref={ref} className={`${frame} flex flex-col`} role="img" aria-label="A twelve-tool analytics pipeline that compiles into a single DuckDB query">
-      <div aria-hidden className="relative min-h-0 flex-1">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-          <motion.polyline
-            points={WIRE} fill="none" stroke="var(--color-line-strong)" strokeWidth="1" vectorEffect="non-scaling-stroke"
-            animate={{ opacity: done ? (reduce ? 0.5 : 0) : 1 }}
-            transition={{ duration: 0.6, ease: EASE_EXPO }}
-          />
-        </svg>
-        {SPOTS.map((p, i) => (
-          <motion.div
-            key={TOOLS[i]}
-            className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 whitespace-nowrap rounded-sm border border-line-strong bg-raised px-1 py-1 sm:px-1.5 font-mono text-[10px] text-muted"
-            initial={false}
-            animate={reduce
-              ? { left: `${p.x}%`, top: `${p.y}%`, opacity: 0.35 }
-              : { left: collapsed ? '50%' : `${p.x}%`, top: collapsed ? '50%' : `${p.y}%`, opacity: collapsed ? 0 : 1, scale: collapsed ? 0.5 : 1 }}
-            transition={{ duration: 1.1, ease: EASE_EXPO, delay: (collapsed ? i : TOOLS.length - i) * 0.035 }}
-          >
-            <span className="hidden size-1 rounded-full bg-signal/70 sm:block" />
-            {TOOLS[i]}
-          </motion.div>
+    <div ref={ref} className={`${frame} flex flex-col`} role="img" aria-label="A branching graph of twelve analytics tools, wired many-to-many, that compiles into a single DuckDB query">
+      <svg viewBox="2 16 316 168" aria-hidden className="min-h-0 w-full flex-1 px-3 py-3 sm:px-5 sm:py-5">
+        <defs>
+          <radialGradient id="vel-core" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="var(--color-signal)" stopOpacity=".35" />
+            <stop offset="100%" stopColor="var(--color-signal)" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* links */}
+        <motion.g animate={{ opacity: collapsed ? 0 : 1 }} transition={{ duration: 0.5, ease: EASE_EXPO }}>
+          {CURVES.map((d, i) => (
+            <motion.path key={i} d={d} fill="none" stroke="var(--color-line-strong)" strokeWidth="1"
+              initial={reduce ? false : { pathLength: 0 }} animate={{ pathLength: drawn ? 1 : 0 }}
+              transition={{ duration: 0.9, ease: EASE_EXPO, delay: 0.2 + NODES[EDGES[i][0]].x / 320 }} />
+          ))}
+          {/* data in flight on every link at once: parallel, not serial */}
+          {live && !collapsed && CURVES.map((d, i) => (
+            <circle key={i} r="1.9" fill="var(--color-signal)">
+              <animateMotion dur={`${1.5 + (i % 4) * 0.3}s`} begin={`${(i * 0.37) % 1.5}s`} repeatCount="indefinite" path={d} />
+            </circle>
+          ))}
+        </motion.g>
+
+        {/* tools */}
+        {NODES.map((n, i) => (
+          <motion.g key={n.name} initial={false}
+            animate={collapsed ? { x: 160 - n.x, y: 100 - n.y, opacity: 0, scale: 0.4 } : { x: 0, y: 0, opacity: 1, scale: 1 }}
+            transition={{ duration: 1, ease: EASE_EXPO, delay: (collapsed ? i : NODES.length - i) * 0.03 }}>
+            <rect x={n.x - NW / 2} y={n.y - NH / 2} width={NW} height={NH} rx="4" fill="var(--color-raised)" stroke="var(--color-line-strong)" strokeWidth="1" />
+            <text x={n.x} y={n.y + 3.2} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill="var(--color-muted)">{n.name}</text>
+          </motion.g>
         ))}
-        <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-md border border-signal/40 bg-elevated px-4 py-2.5 text-center font-mono"
-          style={{ boxShadow: '0 0 36px color-mix(in oklab, var(--color-signal) 26%, transparent)' }}
-          initial={false}
-          animate={{ opacity: done ? 1 : 0, scale: done ? 1 : 0.7 }}
-          transition={{ duration: 0.9, ease: EASE_EXPO, delay: done && !reduce ? 0.45 : 0 }}
-        >
-          <span className="block text-sm text-ink">1 query</span>
-          <span className="block text-[10px] uppercase tracking-[0.14em] text-signal">DuckDB</span>
-        </motion.div>
-      </div>
+
+        {/* the compiled result */}
+        <motion.g initial={false} animate={{ opacity: collapsed ? 1 : 0, scale: collapsed ? 1 : 0.7 }}
+          transition={{ duration: 0.8, ease: EASE_EXPO, delay: collapsed ? 0.45 : 0 }}>
+          <circle cx="160" cy="100" r="70" fill="url(#vel-core)" />
+          <rect x="114" y="80" width="92" height="40" rx="6" fill="var(--color-elevated)" stroke="var(--color-signal)" strokeOpacity=".5" />
+          <text x="160" y="98" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12" fill="var(--color-ink)">1 query</text>
+          <text x="160" y="111" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" letterSpacing="1.2" fill="var(--color-signal)">DUCKDB</text>
+        </motion.g>
+      </svg>
       <p aria-hidden className="label flex justify-between border-t border-line px-4 py-3 text-faint sm:px-6">
-        <span>12 tools</span><span>→ 1 query</span>
+        <span>12 tools · 18 links</span><span>→ 1 query</span>
       </p>
     </div>
   );

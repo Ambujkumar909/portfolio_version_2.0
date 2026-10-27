@@ -80,7 +80,6 @@ export function Nav() {
     <header className="fixed inset-x-0 top-3 z-50 px-3 md:top-4 md:px-6">
       <nav aria-label="Primary" className="mx-auto flex h-14 max-w-site items-center justify-between gap-4 rounded-lg border border-line bg-bg/70 pl-3 pr-2 backdrop-blur-xl md:pl-4">
         <A href="/" className="flex items-center gap-3 text-ink" aria-label="Ambuj Kumar, home">
-          <img src="/character/avatar.webp" alt="" width={28} height={28} className="h-7 w-7 rounded-full bg-raised object-cover ring-1 ring-line-strong" />
           <Monogram size={16} className="text-ink" />
         </A>
 

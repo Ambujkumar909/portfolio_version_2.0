@@ -29,7 +29,7 @@ function routeMeta(): Plugin {
           .replace(/(name="twitter:description" content=")[^"]*/, `$1${desc}`)
           .replace(/(property="og:url" content=")[^"]*/, `$1${url}`)
           .replace(/(rel="canonical" href=")[^"]*/, `$1${url}`)
-          .replace(/<link rel="preload" href="\/character\/front.webp"[^>]*>\s*/, '');
+          .replace(/<link rel="preload" as="image"[^>]*>\s*/, '');
         mkdirSync(`dist/work/${f.slug}`, { recursive: true });
         writeFileSync(`dist/work/${f.slug}/index.html`, html);
       }

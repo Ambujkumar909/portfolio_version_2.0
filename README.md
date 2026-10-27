@@ -6,7 +6,7 @@ A cinematic, dual-theme portfolio: Obsidian & Champagne (dark), Ivory & Bronze (
 
 ## Stack
 
-React 19 · TypeScript · Vite 7 · Tailwind CSS v4 (tokens in `src/index.css`) · Framer Motion · raw WebGL for the character · Firebase Hosting.
+React 19 · TypeScript · Vite 7 · Tailwind CSS v4 (tokens in `src/index.css`) · Framer Motion · Firebase Hosting.
 
 ## Run
 
@@ -22,15 +22,9 @@ firebase deploy   # serves dist/
 | Path | What |
 |---|---|
 | `src/content.ts` | Every word on the site: profile, stats, case studies, experience, index, stack |
-| `src/components/Character.tsx` | 2.5D WebGL character: depth parallax, pointer-lit, breathing, per-placement entrances; video-clip ready |
-| `src/components/HeroStage.tsx` | Keynote spotlight + drifting dust |
 | `src/components/visuals.tsx` | Bespoke animated visuals for ITSM, Aether, Velocity, Recon OS |
 | `src/pages/CaseStudy.tsx` | `/work/:slug` template |
-| `public/character/` | Cut-outs + depth maps from the character sheet |
+| `public/hero.webp` | The one photograph (hero); favicon, touch icon and `og.png` are cut from it |
 | `public/resume.pdf` | Public résumé (references removed) |
-
-## Adding character motion clips
-
-Export alpha clips as `public/character/<name>.webm` (VP9 alpha) and `<name>.mov` (HEVC alpha, Safari), then map a pose to the clip in `CLIPS` inside `Character.tsx`.
 
 © Ambuj Kumar
