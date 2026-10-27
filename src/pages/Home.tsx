@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from 'framer-motion';
 import { ABOUT, EXPERIENCE, PERSON, RECOGNITION } from '../content';
 import { EASE_EXPO, useMeta, useReady } from '../lib';
 import { A, Arrow, Fade, Magnetic, Reveal, SectionHead, Tilt, btnLine, btnSolid } from '../components/ui';
@@ -29,7 +29,7 @@ function Portrait({ ready }: { ready: boolean }) {
         transition={{ duration: 1.4, ease: EASE_EXPO, delay: 0.7 }} />
       <Tilt max={4} className="rounded-[20px]">
         <motion.div
-          className="relative aspect-square overflow-hidden rounded-[18px] border border-line-strong bg-raised [box-shadow:var(--shadow)] sm:aspect-[4/3] sm:rounded-[20px] md:aspect-[4/5] lg:aspect-[5/4]"
+          className="relative aspect-[4/5] overflow-hidden rounded-[20px] border border-line-strong bg-raised [box-shadow:var(--shadow)] lg:aspect-[5/4]"
           initial={reduce ? false : { clipPath: 'inset(100% 0% 0% 0% round 20px)' }}
           animate={ready ? { clipPath: 'inset(0% 0% 0% 0% round 20px)' } : undefined}
           transition={{ duration: 1.3, ease: EASE_EXPO, delay: 0.15 }}
@@ -43,16 +43,67 @@ function Portrait({ ready }: { ready: boolean }) {
           />
           <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
         </motion.div>
-        {/* chips float above the print (3D depth inside the tilt) */}
-        <motion.p {...pop(1.1)} className={`${chip} right-3 top-3 sm:-right-4 sm:top-6`} style={{ translateZ: 40 }}>
-          <span className="relative flex h-1.5 w-1.5"><span className="absolute inset-0 animate-ping rounded-full bg-accent opacity-60" /><span className="h-1.5 w-1.5 rounded-full bg-accent" /></span>
-          4 systems replaced
-        </motion.p>
+        {/* name chip floats above the print (3D depth inside the tilt) */}
         <motion.p {...pop(1.25)} className={`${chip} bottom-3 left-3 sm:-left-5 sm:bottom-8`} style={{ translateZ: 60 }}>
           <span className="text-accent">{PERSON.name}</span><span className="text-faint">·</span>Jaipur, IN
         </motion.p>
       </Tilt>
     </figure>
+  );
+}
+
+// Phones only: the photo as a magazine cover. Full-bleed under the glass nav, dissolving into
+// the page, the headline set over its fading edge, and a slowly turning seal that scrolls to the work.
+const SEAL = 'AI SYSTEMS ARCHITECT · GENERATIVE AI · LLM ENGINEER · ';
+function Cover({ ready, progress }: { ready: boolean; progress: MotionValue<number> }) {
+  const reduce = useReducedMotion();
+  const y = useTransform(progress, [0, 1], reduce ? [0, 0] : [0, 150]);
+  const scale = useTransform(progress, [0, 1], reduce ? [1, 1] : [1, 1.14]);
+  const fade = 'linear-gradient(to bottom, transparent 0, #000 150px, #000 52%, rgba(0,0,0,.6) 72%, transparent 96%)';
+  const R = 38;
+  return (
+    <div className="relative md:hidden">
+      <div className="relative h-[74svh] min-h-[480px] max-h-[700px] overflow-hidden" style={{ maskImage: fade, WebkitMaskImage: fade }}>
+        <motion.div className="hero-img absolute inset-x-0 bottom-0 top-[64px]" style={{ y, scale }}>
+          <motion.img
+            src="/hero.webp" srcSet="/hero-960.webp 960w, /hero.webp 1536w" sizes="100vw"
+            width={1536} height={1024} alt="Ambuj Kumar at his desk, working on a laptop" fetchPriority="high" decoding="async"
+            className="h-full w-full object-cover object-[46%_0%]"
+            initial={reduce ? false : { scale: 1.3, opacity: 0, filter: 'blur(14px)' }}
+            animate={ready ? { scale: 1, opacity: 1, filter: 'blur(0px)' } : undefined}
+            transition={{ duration: 2, ease: EASE_EXPO }}
+          />
+        </motion.div>
+        {/* one pass of warm light across the print once it lands */}
+        {!reduce && (
+          <motion.div aria-hidden className="pointer-events-none absolute inset-0"
+            style={{ background: 'linear-gradient(105deg, transparent 35%, rgba(255,236,200,.38) 50%, transparent 65%)' }}
+            initial={{ x: '-110%' }} animate={ready ? { x: '110%' } : undefined}
+            transition={{ duration: 1.6, ease: [0.65, 0, 0.35, 1], delay: 1.2 }} />
+        )}
+      </div>
+
+      {/* cover line: name, level with the seal */}
+      <motion.p className="absolute bottom-[calc(23%+31px)] left-4 flex items-center gap-2 rounded-full border border-line-strong bg-bg/75 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink backdrop-blur-md [box-shadow:var(--shadow)]"
+        initial={reduce ? false : { opacity: 0, x: -16 }} animate={ready ? { opacity: 1, x: 0 } : undefined}
+        transition={{ duration: 1, ease: EASE_EXPO, delay: 0.9 }}>
+        <span className="text-accent">{PERSON.name}</span><span className="text-faint">·</span>Jaipur, IN
+      </motion.p>
+
+      {/* turning seal: roles around a gold arrow; tap to go to the work */}
+      <motion.a href="#work" aria-label="AI Systems Architect, Generative AI and LLM Engineer. Skip to the work"
+        className="absolute bottom-[23%] right-4 grid size-[92px] place-items-center rounded-full border border-line-strong bg-bg/70 text-accent backdrop-blur-md [box-shadow:var(--shadow)]"
+        initial={reduce ? false : { opacity: 0, scale: 0.4, rotate: -120 }} animate={ready ? { opacity: 1, scale: 1, rotate: 0 } : undefined}
+        transition={{ duration: 1.4, ease: EASE_EXPO, delay: 1.05 }}>
+        <svg viewBox="0 0 100 100" aria-hidden className={`absolute inset-0 h-full w-full ${reduce ? '' : 'orbit-spin'}`} style={{ animationDuration: '22s' }}>
+          <defs><path id="seal" d={`M50 50 m-${R} 0 a${R} ${R} 0 1 1 ${2 * R} 0 a${R} ${R} 0 1 1 -${2 * R} 0`} /></defs>
+          <text fontFamily="var(--font-mono)" fontSize="7.2" fill="var(--color-ink)" textLength={2 * Math.PI * R - 2} lengthAdjust="spacing">
+            <textPath href="#seal">{SEAL}</textPath>
+          </text>
+        </svg>
+        <span className="grid size-10 place-items-center rounded-full border border-accent/40"><Arrow className="rotate-90" /></span>
+      </motion.a>
+    </div>
   );
 }
 
@@ -63,6 +114,8 @@ function Hero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const contentY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, -90]);
   const contentO = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  // phones: the cover carries the scroll motion; the words and buttons stay solid
+  const [wide] = useState(() => matchMedia('(min-width: 768px)').matches);
 
   const show = (d: number) => ({
     initial: { opacity: 0, y: reduce ? 0 : 18 },
@@ -75,9 +128,11 @@ function Hero() {
       <div aria-hidden className="absolute inset-0 -z-10 wash-tr" />
       <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-[30%] bg-gradient-to-t from-bg to-transparent" />
 
-      <div className="wrap grid items-center gap-12 pb-8 pt-28 md:grid-cols-12 md:gap-8 md:pb-16 md:pt-36 lg:min-h-[100svh] lg:gap-10 lg:pt-28">
-        <motion.div style={{ y: contentY, opacity: contentO }} className="relative z-10 md:col-span-7 lg:col-span-6">
-          <motion.p {...show(0)} className="label mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-muted md:mb-8">
+      <Cover ready={ready} progress={scrollYProgress} />
+
+      <div className="wrap grid items-center gap-12 pb-8 pt-0 md:grid-cols-12 md:gap-8 md:pb-16 md:pt-36 lg:min-h-[100svh] lg:gap-10 lg:pt-28">
+        <motion.div style={wide ? { y: contentY, opacity: contentO } : undefined} className="relative z-10 -mt-24 md:col-span-7 md:mt-0 lg:col-span-6">
+          <motion.p {...show(0)} className="label mb-6 hidden flex-wrap items-center gap-x-3 gap-y-2 text-muted md:mb-8 md:flex">
             <span className="h-px w-8 bg-accent" aria-hidden />
             <span>AI Systems Architect</span> <span className="hidden text-faint xl:inline">·</span> <span className="w-full pl-11 xl:w-auto xl:pl-0">Generative AI / LLM Engineer</span>
           </motion.p>
@@ -97,7 +152,7 @@ function Hero() {
           </motion.div>
         </motion.div>
 
-        <div className="md:col-span-5 lg:col-span-6 lg:pl-4 xl:pl-8">
+        <div className="hidden md:col-span-5 md:block lg:col-span-6 lg:pl-4 xl:pl-8">
           <Portrait ready={ready} />
         </div>
       </div>
